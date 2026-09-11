@@ -68,11 +68,13 @@
   color: var(--accent);
   letter-spacing: 1px;
 }
+
 @media (max-width: 1100px) {
   .context {
     display: none;
   }
 }
+
 @media (max-width: 700px) {
   .header {
     flex-wrap: wrap;

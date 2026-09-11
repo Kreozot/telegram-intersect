@@ -167,6 +167,7 @@
   color: var(--accent);
   font-weight: 500;
 }
+
 @media (max-width: 800px) {
   .explorer {
     padding: 24px 16px;

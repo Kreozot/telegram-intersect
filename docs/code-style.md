@@ -10,7 +10,7 @@ This file contains stylistic conventions. Design responsibilities and verificati
 - Prefer named exports except where a framework requires defaults.
 - Use descriptive custom CSS class names and semantic theme variables.
 - Use camelCase names for CSS Module classes.
-- Separate adjacent CSS rule blocks with an empty line.
+- Separate adjacent CSS rule and at-rule blocks, including `@media`, with an empty line.
 - Avoid relying on inherited styles or element/tag selectors when the element can have a dedicated
   class. Prefer a directly assigned class over styling an element through an ancestor selector.
 - Write comments and JSDoc in English.

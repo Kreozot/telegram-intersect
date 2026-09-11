@@ -6,7 +6,6 @@ export default {
   reportInvalidScopeDisables: true,
   reportNeedlessDisables: true,
   rules: {
-    "at-rule-empty-line-before": null,
     "custom-property-empty-line-before": null,
     "media-feature-range-notation": null,
     "no-descending-specificity": null,
