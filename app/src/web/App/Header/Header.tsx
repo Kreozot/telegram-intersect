@@ -1,4 +1,5 @@
 import { Button, useMantineColorScheme } from "@mantine/core";
+import { LogoMark } from "../LogoMark.js";
 import styles from "./Header.module.css";
 
 interface Props {
@@ -14,7 +15,7 @@ export function Header({ demo, connected, authenticated, onDemo, onLock }: Props
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
-        <span className={styles.mark}>⋈</span>
+        <LogoMark className={styles.mark} />
         <div>
           <strong>
             intersect<span>.</span>

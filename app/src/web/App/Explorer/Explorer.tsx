@@ -1,5 +1,6 @@
 import { Button, Progress } from "@mantine/core";
 import type { GraphData, Scan } from "../../../shared/contracts.js";
+import { LogoMark } from "../LogoMark.js";
 import styles from "./Explorer.module.css";
 import { GraphCanvas } from "./GraphCanvas/GraphCanvas.js";
 import { GraphFilter } from "./GraphFilter/GraphFilter.js";
@@ -105,7 +106,7 @@ export function Explorer({
         </div>
         {!people && (
           <div className={styles.empty}>
-            <div className={styles.emptyIcon}>⋈</div>
+            <LogoMark className={styles.emptyIcon} />
             <h2>Every connection has a context.</h2>
             <p>
               Select people to discover shared groups in the background.
