@@ -26,6 +26,18 @@ test("normalizes people without phone, photo, message content, or unsafe numeric
   assert.equal(JSON.stringify(person).includes("private-phone"), false);
 });
 
+test("retains only the server-side locator needed for a static profile thumbnail", () => {
+  const user = new Api.User({
+    id: bigInt(7),
+    accessHash: bigInt(8),
+    firstName: "Alice",
+    photo: new Api.UserProfilePhoto({ photoId: bigInt(9), dcId: 4, hasVideo: true }),
+  });
+  const person = normalizePerson(user, "contacts");
+  assert.deepEqual(person?.photo, { id: "9", dcId: 4 });
+  assert.equal(JSON.stringify(person).includes("hasVideo"), false);
+});
+
 test("dialog normalization clears message objects and retains only matching private dialog people", () => {
   const alice = new Api.User({
     id: bigInt(1),
@@ -64,7 +76,7 @@ test("dialog normalization clears message objects and retains only matching priv
   assert.equal(result.next, null);
 });
 
-test("privacy boundary rejects history, message search, download, and update recovery", async () => {
+test("privacy boundary rejects generic media access and update recovery", async () => {
   for (const request of [
     new Api.messages.GetHistory({ peer: new Api.InputPeerSelf() }),
     new Api.messages.GetMessages({ id: [] }),
@@ -103,6 +115,14 @@ test("storage strips extra fields and session encryption rejects tampering", () 
   repo.savePeople([person]);
   assert.equal(JSON.stringify(repo.storedPeople()).includes("PRIVATE_MESSAGE_SENTINEL"), false);
   assert.equal("accessHash" in (repo.people()[0] ?? {}), false);
+  repo.saveAvatar({
+    personId: "user:1",
+    photoId: "9",
+    contentType: "image/jpeg",
+    bytes: Buffer.from([0xff, 0xd8, 0xff]),
+  });
+  assert.equal(repo.people()[0]?.avatarUrl, "/api/avatars/user%3A1?v=9");
+  assert.deepEqual(repo.avatar("user:1")?.bytes, Buffer.from([0xff, 0xd8, 0xff]));
   repo.saveSession("SECRET_SESSION");
   assert.equal(repo.session(), "SECRET_SESSION");
   const ciphertext = seal("SECRET_SESSION", key);
@@ -111,5 +131,6 @@ test("storage strips extra fields and session encryption rejects tampering", () 
   repo.clearAll();
   assert.equal(repo.session(), "");
   assert.deepEqual(repo.people(), []);
+  assert.equal(repo.avatar("user:1"), null);
   repo.close();
 });

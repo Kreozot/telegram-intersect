@@ -1,3 +1,4 @@
+import bigInt from "big-integer";
 import { Api, TelegramClient } from "teleproto";
 import { UpdateManager } from "teleproto/client/updates/manager.js";
 import { Logger, LogLevel } from "teleproto/extensions/Logger.js";
@@ -49,6 +50,31 @@ export function assertAllowedRequest(request: Api.AnyRequest): void {
 
 /** Encapsulates the SDK with a request allowlist, no update recovery, and no entity persistence. */
 export class PrivacyClient extends TelegramClient {
+  /** Downloads one bounded small profile thumbnail without opening generic media access. */
+  downloadProfileThumbnail(
+    userId: string,
+    accessHash: string,
+    photoId: string,
+    dcId: number,
+    limit: number,
+  ): Promise<Api.upload.TypeFile> {
+    const request = new Api.upload.GetFile({
+      location: new Api.InputPeerPhotoFileLocation({
+        peer: new Api.InputPeerUser({
+          userId: bigInt(userId),
+          accessHash: bigInt(accessHash),
+        }),
+        photoId: bigInt(photoId),
+        big: false,
+      }),
+      offset: bigInt.zero,
+      limit,
+    });
+    return super.invoke(
+      new Api.InvokeWithoutUpdates({ query: request }),
+      dcId,
+    ) as Promise<Api.upload.TypeFile>;
+  }
   /** Checks authorization without the SDK's default update-state subscription, including during DC migration. */
   override async isUserAuthorized(): Promise<boolean> {
     try {

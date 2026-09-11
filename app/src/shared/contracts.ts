@@ -4,6 +4,7 @@ export interface Person {
   name: string;
   username: string | null;
   sources: PersonSource[];
+  avatarUrl?: string;
 }
 export interface Group {
   id: string;

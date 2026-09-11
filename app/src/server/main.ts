@@ -4,6 +4,7 @@ import { loadConfig } from "./config.js";
 import { createApp } from "./http/create-app.js";
 import { ScanService } from "./scans/scan-service.js";
 import { Repository } from "./storage/repository.js";
+import { AvatarService } from "./telegram/avatar-service.js";
 import { MetadataService } from "./telegram/metadata-service.js";
 import { TelegramService } from "./telegram/telegram-service.js";
 
@@ -12,7 +13,8 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const repo = new Repository(resolve(config.dataDir, "intersect.sqlite"), config.encryptionKey);
   const telegram = new TelegramService(config, repo);
-  const metadata = new MetadataService(repo, () => telegram.requireClient());
+  const avatars = new AvatarService(repo, () => telegram.requireClient());
+  const metadata = new MetadataService(repo, () => telegram.requireClient(), avatars);
   const scans = new ScanService(repo, metadata);
   const app = createApp(config, repo, telegram, scans, metadata);
   if (process.argv.includes("--dev")) {
@@ -51,6 +53,7 @@ async function main(): Promise<void> {
   }
   app.addHook("onClose", async () => {
     await scans.cancel();
+    avatars.close();
     await telegram.close();
     repo.close();
   });

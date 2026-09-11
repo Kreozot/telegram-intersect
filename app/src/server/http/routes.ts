@@ -70,6 +70,27 @@ export function registerRoutes(
     people: repo.people(),
     scan: repo.completedScan(),
   }));
+  app.get<{ Params: { personId: string } }>(
+    "/api/avatars/:personId",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["personId"],
+          additionalProperties: false,
+          properties: { personId: { type: "string", pattern: "^user:[0-9]+$" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const avatar = repo.avatar(request.params.personId);
+      if (!avatar) return reply.code(404).send({ error: "Avatar is not cached." });
+      return reply
+        .header("Cache-Control", "private, max-age=31536000, immutable")
+        .type(avatar.contentType)
+        .send(avatar.bytes);
+    },
+  );
   app.post<{ Body: { source: PersonSource } }>(
     "/api/people",
     {

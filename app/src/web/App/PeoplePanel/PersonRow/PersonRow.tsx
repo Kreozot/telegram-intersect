@@ -8,7 +8,7 @@ interface Props {
   status: ScanStatus | null;
   onToggle: (id: string) => void;
 }
-/** Displays one minimal person identity and its scan state without fetching profile or message data. */
+/** Displays one identity with a cached static avatar and initials as a resilient fallback. */
 export function PersonRow({ person, checked, status, onToggle }: Props) {
   const initials = person.name
     .split(" ")
@@ -27,7 +27,9 @@ export function PersonRow({ person, checked, status, onToggle }: Props) {
         checked={checked}
         onChange={() => onToggle(person.id)}
       />
-      <span className={styles.avatar}>{initials}</span>
+      <span className={styles.avatar} aria-hidden="true">
+        {person.avatarUrl ? <img src={person.avatarUrl} alt="" /> : initials}
+      </span>
       <span className={styles.identity}>
         <strong>{person.name}</strong>
         <small>{person.username ? `@${person.username}` : person.sources.join(" · ")}</small>

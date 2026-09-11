@@ -3,7 +3,7 @@ import { Api } from "teleproto";
 import type { PersonSource } from "../../shared/contracts.js";
 import type { StoredPerson } from "../storage/repository.js";
 
-/** Extracts eligible human identity fields, excluding phone, photo, status, and every message field. */
+/** Extracts eligible identity and a narrow server-only photo locator, excluding all other fields. */
 export function normalizePerson(user: Api.TypeUser, source: PersonSource): StoredPerson | null {
   if (
     !(user instanceof Api.User) ||
@@ -14,6 +14,7 @@ export function normalizePerson(user: Api.TypeUser, source: PersonSource): Store
     user.accessHash === undefined
   )
     return null;
+  const photo = user.photo instanceof Api.UserProfilePhoto ? user.photo : null;
   return {
     id: `user:${user.id.toString()}`,
     name:
@@ -23,6 +24,7 @@ export function normalizePerson(user: Api.TypeUser, source: PersonSource): Store
     username: user.username ?? null,
     sources: [source],
     accessHash: user.accessHash.toString(),
+    ...(photo ? { photo: { id: photo.photoId.toString(), dcId: photo.dcId } } : {}),
   };
 }
 

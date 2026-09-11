@@ -8,6 +8,7 @@ Select saved contacts or people from private dialogs, scan their groups in commo
 
 - Telegram QR or phone/code sign-in, including two-step verification.
 - Separate contact and dialog discovery, search, source filters, and bulk selection.
+- Cache-first static profile avatars downloaded sequentially after catalog loading.
 - Cytoscape graph with neighborhood highlighting, zoom, fit, community counts, and a keyboard-accessible details panel.
 - Light and dark themes, plus a clearly labeled synthetic demo requiring no account.
 - Sequential scans with pagination, Telegram flood waits, cancellation, checkpoints, and resume after a restart.
@@ -17,7 +18,7 @@ Select saved contacts or people from private dialogs, scan their groups in commo
 
 ## Privacy: no conversation archive
 
-Intersect does **not** request message history, search messages, download attachments, send messages, or mark conversations as read. Application and protocol request logging are disabled.
+Intersect does **not** request message history, search messages, download message attachments, send messages, or mark conversations as read. It downloads only small static profile thumbnails after catalog discovery. Application and protocol request logging are disabled.
 
 Telegram's [dialog-list API](https://core.telegram.org/method/messages.getDialogs) includes top-message objects unavoidably. If you click **Load dialogs**, these are received transiently, reduced to pagination metadata, and discarded in the server adapter. Message content is never stored, logged, or sent to the browser. This behavior was explicitly approved by the owner. **Load contacts** does not make dialog-list requests.
 

@@ -10,6 +10,7 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 - [x] Scaffold strict TypeScript, npm lockfile, Biome, Vite, Fastify, and SQLite.
 - [x] Implement owner access, same-origin API protection, encrypted session persistence, login challenges, and deletion paths.
 - [x] Implement normalized people discovery, independent source merging, filters, search, and selection.
+- [x] Add non-blocking static profile-avatar loading with authenticated local caching.
 - [x] Implement sequential common-group scans, pagination, flood waits, checkpoint persistence, cancellation, and restart/resume behavior.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
 - [x] Add Pinokio runtime/install/start/update/dependency-reset scripts.

@@ -15,6 +15,7 @@
 
 - One owner and one connected Telegram account per deployment. Hosted access still requires an application authentication boundary. Multi-user hosting requires a separate approved design.
 - Source selection, search, deduplication, scan progress, cancellation, partial-result recovery, and refresh.
+- Static profile avatars loaded in the background with local cache-first display and initials fallback.
 - A bipartite person–group graph, group counts, neighborhood highlighting, and a details panel. A group–group projection may follow: edge weight means the number of selected people observed in both groups.
 - Group selection filters the graph. Importing all participants of a selected group is a separate, unapproved feature whose completeness depends on API access.
 - Include archived private dialogs when available. Exclude bots, self, and deleted accounts from the default people selection; explain exclusions.

@@ -4,7 +4,7 @@
 
 The owner requires no conversation loading or storage. The owner explicitly accepted Telegram's unavoidable top-message fields in dialog-list responses if immediately discarded without storage or browser transmission.
 
-Do not interpret this exception as authorization to fetch message history, search messages, synchronize message updates, download media, or build a conversation archive.
+Do not interpret this exception as authorization to fetch message history, search messages, synchronize message updates, download message media, or build a conversation archive. The owner separately approved bounded static profile thumbnails on 2026-09-11.
 
 ## Data inventory
 
@@ -12,6 +12,8 @@ Do not interpret this exception as authorization to fetch message history, searc
 | --- | --- | --- |
 | Person ID, display name, optional username, source flags | SQLite until clear/disconnect | Selection and graph labels |
 | Person access hash | Server-side SQLite only | Address common-group requests |
+| Profile photo ID/DC locator | Server-side SQLite only | Refresh the small static avatar rendition |
+| Static JPEG/PNG/WebP avatar | SQLite until clear/disconnect | Cache-first person identification in the UI |
 | Group ID and title | SQLite scan observations | Graph nodes |
 | Person/group associations | Current and last complete scan | Observed connections and counts |
 | Scan status, cursor, retry time, timestamps, safe error | SQLite | Progress, cancellation, recovery |
@@ -25,11 +27,12 @@ Do not interpret this exception as authorization to fetch message history, searc
 | Theme preference | Browser storage via Mantine | Persist light/dark preference |
 | Demo data | Synthetic browser data only | Preview UI without Telegram |
 
-No avatars or attachments are downloaded. Contact phone numbers, presence, biographies, message bodies, and raw responses are not stored. Runtime memory is garbage-collected; the application does not promise forensic erasure of process memory, OS swap, or external backups.
+No message attachments or animated avatars are downloaded. Contact phone numbers, presence, biographies, message bodies, and raw responses are not stored. Runtime memory is garbage-collected; the application does not promise forensic erasure of process memory, OS swap, or external backups.
 
 ## Enforcement
 
 - PrivacyClient rejects non-allowlisted RPCs, including history, message retrieval, and update-difference methods.
+- A dedicated PrivacyClient method constructs only a small peer profile-photo request; generic file-download requests remain rejected.
 - Application RPCs use invokeWithoutUpdates. The SDK's background update manager is replaced with a no-sync implementation.
 - SDK entity caching and protocol logging are disabled.
 - Dialog normalization reduces identities and cursor metadata, clearing messages even on failure.
@@ -42,6 +45,6 @@ Tests inject sentinel message/phone values and assert that normalized and stored
 
 ## Deletion and backups
 
-Lock revokes the current browser session only. Clear local data removes catalogs and snapshots while preserving Telegram authorization. Disconnect revokes the remote app session and clears all local account records; other Telegram clients are unaffected.
+Lock revokes the current browser session only. Clear local data removes catalogs, snapshots, and cached avatars while preserving Telegram authorization. Disconnect revokes the remote app session and clears all local account records, including avatars; other Telegram clients are unaffected.
 
 SQLite secure_delete and VACUUM reduce remnants in the active database but cannot delete filesystem snapshots, SSD remapping copies, or independent backups. Keep the private data directory outside published artifacts and limit OS access. Stop the process for consistent backups, protect them, and apply a retention policy.

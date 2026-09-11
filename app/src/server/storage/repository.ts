@@ -4,6 +4,19 @@ import { seal, unseal } from "./vault.js";
 
 export interface StoredPerson extends Person {
   accessHash: string;
+  photo?: StoredProfilePhoto;
+}
+
+export interface StoredProfilePhoto {
+  id: string;
+  dcId: number;
+}
+
+export interface CachedAvatar {
+  personId: string;
+  photoId: string;
+  contentType: "image/jpeg" | "image/png" | "image/webp";
+  bytes: Buffer;
 }
 
 /** Owns SQLite storage for allowlisted metadata and encrypted credentials; never accepts protocol responses. */
@@ -16,12 +29,12 @@ export class Repository {
   ) {
     this.db = new DatabaseSync(path);
     const version = this.db.prepare("PRAGMA user_version").get();
-    if (Number(version?.user_version ?? 0) > 1) {
+    if (Number(version?.user_version ?? 0) > 2) {
       this.db.close();
       throw new Error("Database was created by a newer application version.");
     }
     this.db.exec(
-      "PRAGMA secure_delete=ON; CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL); PRAGMA user_version=1;",
+      "PRAGMA secure_delete=ON; CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS avatars (person_id TEXT PRIMARY KEY, photo_id TEXT NOT NULL, content_type TEXT NOT NULL, bytes BLOB NOT NULL); PRAGMA user_version=2;",
     );
   }
   /** Reads a typed internal record previously written by this repository. */
@@ -37,11 +50,22 @@ export class Repository {
   }
   /** Returns only public person metadata for catalog responses. */
   people(): Person[] {
+    const avatars = new Map<string, string>(
+      this.db
+        .prepare("SELECT person_id, photo_id FROM avatars")
+        .all()
+        .map((row) => [String(row.person_id), String(row.photo_id)] as const),
+    );
     return this.storedPeople().map(({ id, name, username, sources }) => ({
       id,
       name,
       username,
       sources,
+      ...(avatars.has(id)
+        ? {
+            avatarUrl: `/api/avatars/${encodeURIComponent(id)}?v=${encodeURIComponent(avatars.get(id) ?? "")}`,
+          }
+        : {}),
     }));
   }
   /** Returns server-only input-user metadata needed to query common groups. */
@@ -52,14 +76,47 @@ export class Repository {
   savePeople(people: StoredPerson[]): void {
     this.write(
       "people",
-      people.map(({ id, name, username, sources, accessHash }) => ({
+      people.map(({ id, name, username, sources, accessHash, photo }) => ({
         id,
         name,
         username,
         sources,
         accessHash,
+        ...(photo ? { photo: { id: photo.id, dcId: photo.dcId } } : {}),
       })),
     );
+  }
+  /** Reads one cached static avatar without exposing its Telegram file location. */
+  avatar(personId: string): CachedAvatar | null {
+    const row = this.db
+      .prepare("SELECT person_id, photo_id, content_type, bytes FROM avatars WHERE person_id=?")
+      .get(personId);
+    if (!row) return null;
+    const contentType = String(row.content_type);
+    if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) return null;
+    return {
+      personId: String(row.person_id),
+      photoId: String(row.photo_id),
+      contentType: contentType as CachedAvatar["contentType"],
+      bytes: Buffer.from(row.bytes as Uint8Array),
+    };
+  }
+  /** Atomically replaces a person's cached avatar after static-image validation. */
+  saveAvatar(avatar: CachedAvatar): void {
+    this.db
+      .prepare(
+        "INSERT INTO avatars VALUES (?,?,?,?) ON CONFLICT(person_id) DO UPDATE SET photo_id=excluded.photo_id, content_type=excluded.content_type, bytes=excluded.bytes",
+      )
+      .run(avatar.personId, avatar.photoId, avatar.contentType, avatar.bytes);
+  }
+  /** Drops cached avatars for identities or photos no longer present in the catalog. */
+  pruneAvatars(people: readonly StoredPerson[]): void {
+    const current = new Map(people.map((person) => [person.id, person.photo?.id]));
+    for (const row of this.db.prepare("SELECT person_id, photo_id FROM avatars").all()) {
+      const personId = String(row.person_id);
+      if (!current.has(personId) || current.get(personId) === undefined)
+        this.db.prepare("DELETE FROM avatars WHERE person_id=?").run(personId);
+    }
   }
   /** Reads the current job, including partial observations retained on cancellation. */
   scan(): Scan | null {
@@ -100,11 +157,11 @@ export class Repository {
   }
   /** Removes cached graph/catalog data while retaining the connected session. */
   clearAnalysis(): void {
-    this.db.exec("DELETE FROM state WHERE key != 'session'; VACUUM;");
+    this.db.exec("DELETE FROM state WHERE key != 'session'; DELETE FROM avatars; VACUUM;");
   }
   /** Removes all account data after logout or explicit local forgetting. */
   clearAll(): void {
-    this.db.exec("DELETE FROM state; VACUUM;");
+    this.db.exec("DELETE FROM state; DELETE FROM avatars; VACUUM;");
   }
   /** Releases SQLite resources at server shutdown and in tests. */
   close(): void {

@@ -5,6 +5,7 @@ import { FloodWaitError } from "teleproto/errors/index.js";
 import type { PersonSource } from "../../shared/contracts.js";
 import { RequestError } from "../request-error.js";
 import type { Repository, StoredPerson } from "../storage/repository.js";
+import type { AvatarService } from "./avatar-service.js";
 import { type GroupPage, RateLimitError, type TelegramGateway } from "./gateway.js";
 import { inputUser, normalizeDialogs, normalizePerson } from "./normalize.js";
 import type { PrivacyClient } from "./privacy-client.js";
@@ -17,6 +18,7 @@ export class MetadataService implements TelegramGateway {
   constructor(
     private readonly repo: Repository,
     private readonly requireClient: () => PrivacyClient,
+    private readonly avatars?: AvatarService,
   ) {
     this.cooldown = Math.max(
       0,
@@ -90,7 +92,10 @@ export class MetadataService implements TelegramGateway {
           ...person,
           sources: [...new Set([...(merged.get(person.id)?.sources ?? []), source])],
         });
-      this.repo.savePeople([...merged.values()].sort((a, b) => a.name.localeCompare(b.name)));
+      const people = [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));
+      this.repo.savePeople(people);
+      this.repo.pruneAvatars(people);
+      this.avatars?.enqueue(people);
     } catch (error) {
       if (error instanceof FloodWaitError) this.cooldown = Date.now() + error.seconds * 1000;
       throw new RequestError(
