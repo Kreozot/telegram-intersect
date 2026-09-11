@@ -7,22 +7,13 @@
 .title {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 18px;
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 1.4px;
 }
 .title > span:last-child {
   color: var(--accent);
-}
-.panel h2 {
-  margin: 18px 0 7px;
-  font-size: 18px;
-  letter-spacing: -0.4px;
-}
-.subtitle {
-  font-size: 11px;
-  color: var(--muted);
-  margin: 0 0 18px;
 }
 .imports {
   display: flex;

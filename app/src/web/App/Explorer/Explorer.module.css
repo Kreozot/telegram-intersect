@@ -10,20 +10,10 @@
   justify-content: space-between;
   gap: 15px;
 }
-.eyebrow {
-  color: var(--accent);
-  font-size: 9px;
-  letter-spacing: 1.8px;
-}
 .heading h1 {
   font-size: 26px;
   font-weight: 550;
   letter-spacing: -0.8px;
-  margin: 12px 0 8px;
-}
-.heading p {
-  color: var(--muted);
-  font-size: 12px;
   margin: 0;
 }
 .badge {

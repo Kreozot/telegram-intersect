@@ -39,9 +39,7 @@ export function Explorer({
     <section className={styles.explorer}>
       <div className={styles.heading}>
         <div>
-          <span className={styles.eyebrow}>THE BIGGER PICTURE</span>
           <h1>Your shared communities</h1>
-          <p>A little more context for the people in your world.</p>
         </div>
         <span className={styles.badge}>{demo ? "SAMPLE MAP" : "PERSON ↔ GROUP"}</span>
       </div>

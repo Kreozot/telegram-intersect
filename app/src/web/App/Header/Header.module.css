@@ -13,6 +13,11 @@
   align-items: center;
   min-width: 223px;
 }
+.brand > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
 .mark {
   color: var(--accent);
   font-size: 48px;
@@ -28,11 +33,10 @@
   color: var(--accent);
 }
 .brand small {
-  display: block;
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 1px;
-  margin-top: 7px;
+  white-space: nowrap;
 }
 .context {
   font-size: 11px;

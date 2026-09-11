@@ -90,8 +90,6 @@ export function PeoplePanel({
         <span>YOUR PEOPLE</span>
         <span>{people.length}</span>
       </div>
-      <h2>Start with who you know.</h2>
-      <p className={styles.subtitle}>Choose the people you want to connect.</p>
       {!demo && (
         <div className={styles.imports}>
           <Button
