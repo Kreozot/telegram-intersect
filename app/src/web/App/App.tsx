@@ -1,22 +1,21 @@
-import { Alert, Button } from "@mantine/core";
+import { Alert } from "@mantine/core";
 import { useState } from "react";
 import { buildGraph } from "../../shared/graph.js";
 import { filterCommunities } from "../../shared/graph-filter.js";
-import { AccessPanel } from "./AccessPanel/AccessPanel.js";
 import styles from "./App.module.css";
+import { ConfirmationAlert, type ConfirmationKind } from "./ConfirmationAlert/ConfirmationAlert.js";
 import { DetailsPanel } from "./DetailsPanel/DetailsPanel.js";
 import { Explorer } from "./Explorer/Explorer.js";
 import { Header } from "./Header/Header.js";
-import { LoginPanel } from "./LoginPanel/LoginPanel.js";
-import { PeoplePanel } from "./PeoplePanel/PeoplePanel.js";
 import { useWorkspace } from "./useWorkspace.js";
+import { WorkspaceSidebar } from "./WorkspaceSidebar/WorkspaceSidebar.js";
 
 /** Composes the workspace panels; data coordination stays in useWorkspace and rendering in private children. */
 export function App() {
   const workspace = useWorkspace();
   const [focus, setFocus] = useState<string | null>(null);
   const [intersectionsOnly, setIntersectionsOnly] = useState(true);
-  const [confirm, setConfirm] = useState<"logout" | "data" | null>(null);
+  const [confirm, setConfirm] = useState<ConfirmationKind | null>(null);
   const graph = buildGraph(workspace.snapshot.people, workspace.snapshot.scan, workspace.selected);
   const visibleGraph = filterCommunities(graph, intersectionsOnly);
   const connected = workspace.telegram.stage === "authorized";
@@ -48,84 +47,17 @@ export function App() {
         </Alert>
       )}
       {confirm && (
-        <Alert
-          color="orange"
-          title={
-            confirm === "logout"
-              ? "Disconnect Telegram and delete local account data?"
-              : "Delete all cached people and graph data?"
-          }
-          className={styles.alert}
-        >
-          {confirm === "logout"
-            ? "This revokes this app's Telegram session. Other Telegram clients stay connected."
-            : "Your Telegram session stays connected. This does not affect Telegram contacts or chats."}
-          <div className={styles.actions}>
-            <Button
-              color="red"
-              onClick={() => {
-                void confirmAction();
-              }}
-              loading={workspace.busy}
-            >
-              Confirm
-            </Button>
-            <Button variant="default" onClick={() => setConfirm(null)}>
-              Cancel
-            </Button>
-          </div>
-        </Alert>
+        <ConfirmationAlert
+          kind={confirm}
+          busy={workspace.busy}
+          onConfirm={() => {
+            void confirmAction();
+          }}
+          onCancel={() => setConfirm(null)}
+        />
       )}
       <main className={styles.workspace}>
-        <aside className={styles.sidebar}>
-          {!workspace.authenticated && !workspace.demo ? (
-            <AccessPanel
-              onUnlock={(key) => workspace.command("access", { key })}
-              busy={workspace.busy}
-              onDemo={workspace.showDemo}
-            />
-          ) : !connected && !workspace.demo ? (
-            <LoginPanel
-              status={workspace.telegram}
-              busy={workspace.busy}
-              onStart={(mode) => workspace.command("telegram/login", { mode })}
-              onAnswer={(value) => workspace.command("telegram/answer", { value })}
-              onCancel={() => workspace.command("telegram/cancel")}
-            />
-          ) : (
-            <PeoplePanel
-              people={workspace.snapshot.people}
-              selected={workspace.selected}
-              scan={workspace.snapshot.scan}
-              demo={workspace.demo}
-              busy={workspace.busy}
-              maxSelectedPeople={workspace.maxSelectedPeople}
-              onToggle={workspace.toggle}
-              onSelect={workspace.select}
-              onLoad={(source) => workspace.command("people", { source })}
-              onCancel={() => workspace.command("scans/cancel")}
-              onResume={() => workspace.command("scans/resume")}
-            />
-          )}
-          {workspace.authenticated && connected && !workspace.demo && (
-            <div className={styles.accountActions}>
-              <button
-                className={styles.accountButton}
-                type="button"
-                onClick={() => setConfirm("data")}
-              >
-                Clear local data
-              </button>
-              <button
-                className={styles.accountButton}
-                type="button"
-                onClick={() => setConfirm("logout")}
-              >
-                Disconnect Telegram
-              </button>
-            </div>
-          )}
-        </aside>
+        <WorkspaceSidebar workspace={workspace} connected={connected} onConfirm={setConfirm} />
         <Explorer
           graph={graph}
           visibleGraph={visibleGraph}

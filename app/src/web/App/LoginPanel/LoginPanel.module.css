@@ -20,19 +20,6 @@
   line-height: 1.7;
 }
 
-.buttons,
-.form {
-  display: grid;
-  gap: 14px;
-  margin: 22px 0;
-}
-
-.qr {
-  width: 100%;
-  max-width: 240px;
-  border-radius: 12px;
-}
-
 .note {
   border-top: 1px solid var(--line);
   margin-top: 28px;

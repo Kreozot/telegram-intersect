@@ -1,0 +1,71 @@
+.back {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-align: left;
+  padding: 0 0 20px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.coverage {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 15px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.coverageStatus {
+  color: var(--text);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.itemButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 10px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.itemButton:hover {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.itemLabel {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.symbol {
+  width: 25px;
+  height: 25px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.description {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.9;
+  margin: 0 0 24px;
+}

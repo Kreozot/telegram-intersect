@@ -11,39 +11,8 @@
   min-height: 720px;
 }
 
-.sidebar {
-  background: var(--panel);
-  border-right: 1px solid var(--line);
-  display: flex;
-  flex-direction: column;
-}
-
 .alert {
   margin: 12px 20px 0;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.accountActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 18px 22px;
-  border-top: 1px solid var(--line);
-  margin-top: auto;
-}
-
-.accountButton {
-  color: var(--muted);
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  font-size: 11px;
 }
 
 .footer {
@@ -82,10 +51,6 @@
   .workspace {
     display: flex;
     flex-direction: column;
-  }
-
-  .sidebar {
-    border-right: 0;
   }
 
   .footerTagline {

@@ -4,6 +4,7 @@ import type { Person, PersonSource, Scan } from "../../../shared/contracts.js";
 import { limitSelection } from "../../../shared/selection.js";
 import styles from "./PeoplePanel.module.css";
 import { PersonRow } from "./PersonRow/PersonRow.js";
+import { ScanActions } from "./ScanActions/ScanActions.js";
 import { type PeopleSort, sortPeople } from "./sort-people.js";
 
 interface Props {
@@ -204,27 +205,7 @@ export function PeoplePanel({
           <strong className={styles.selectionCount}>{selected.size}</strong> / {maxSelectedPeople}{" "}
           people selected
         </div>
-        {scan?.running ? (
-          <Button
-            variant="subtle"
-            size="xs"
-            onClick={() => {
-              void onCancel();
-            }}
-          >
-            Cancel scan
-          </Button>
-        ) : scan?.people.some((p) => p.status !== "completed") && !demo ? (
-          <Button
-            variant="subtle"
-            size="xs"
-            onClick={() => {
-              void onResume();
-            }}
-          >
-            Resume unfinished scan
-          </Button>
-        ) : null}
+        <ScanActions scan={scan} demo={demo} onCancel={onCancel} onResume={onResume} />
         <p className={styles.bottomNote}>
           Selecting people checks their shared groups in the background. Only groups shared with
           your account are requested.

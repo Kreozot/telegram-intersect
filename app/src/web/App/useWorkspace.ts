@@ -192,3 +192,5 @@ export function useWorkspace() {
     toggle,
   };
 }
+
+export type Workspace = ReturnType<typeof useWorkspace>;

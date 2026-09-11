@@ -1,6 +1,6 @@
 import { Button, Progress } from "@mantine/core";
 import type { GraphData, Scan } from "../../../shared/contracts.js";
-import { LogoMark } from "../LogoMark.js";
+import { LogoMark } from "../LogoMark/LogoMark.js";
 import styles from "./Explorer.module.css";
 import { GraphCanvas } from "./GraphCanvas/GraphCanvas.js";
 import { GraphFilter } from "./GraphFilter/GraphFilter.js";

@@ -1,0 +1,75 @@
+.subhead {
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 0 14px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  border-top: 1px solid var(--line);
+}
+
+.countLabel,
+.count {
+  color: var(--accent);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+.itemButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 10px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.itemButton:hover {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.itemLabel {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.itemMeta {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  margin-top: 4px;
+}
+
+.symbol {
+  width: 25px;
+  height: 25px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.count {
+  font-size: 11px;
+}
+
+.placeholder {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+  padding: 25px 0;
+}

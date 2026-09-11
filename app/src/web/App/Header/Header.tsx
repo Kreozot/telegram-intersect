@@ -1,5 +1,5 @@
 import { Button, useMantineColorScheme } from "@mantine/core";
-import { LogoMark } from "../LogoMark.js";
+import { LogoMark } from "../LogoMark/LogoMark.js";
 import styles from "./Header.module.css";
 
 interface Props {
