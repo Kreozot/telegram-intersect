@@ -2,7 +2,7 @@ module.exports = {
   version: "7.0",
   title: "Telegram Intersect",
   description:
-    "Explore the Telegram communities shared by your people. Local-first, metadata-only.",
+    "Select people from Telegram and map how their shared communities overlap across the whole selection. Runs locally and never stores message history.",
   icon: "icon.svg",
   /** Selects the appropriate installation, terminal, or ready UI action for Pinokio. */
   menu: async (_kernel, info) => {

@@ -50,6 +50,10 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
       selector: 'node[kind = "person"][avatarUrl]',
       style: {
         "background-image": "data(avatarUrl)",
+        "background-width": "64px",
+        "background-height": "64px",
+        "background-position-x": "50%",
+        "background-position-y": "50%",
       },
     },
     {

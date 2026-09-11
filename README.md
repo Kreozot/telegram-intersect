@@ -1,8 +1,22 @@
 # Telegram Intersect
 
-A self-hosted web application that maps the Telegram communities shared by people you know.
+A self-hosted web application that reveals which Telegram communities connect the people you know.
 
-Select saved contacts or people from private dialogs, scan their groups in common with your own account, and explore an interactive person–group graph. Community counts refer to selected people with observed memberships, not total group membership.
+Select people from saved contacts or private dialogs and compare their shared communities across the
+whole selection. Intersect checks which groups each selected person shares with your account, then
+combines those observations into an interactive graph showing where several selected people overlap.
+Community counts refer to selected people with observed memberships, not total group membership.
+
+## Screenshots
+
+Explore the synthetic demo without connecting a Telegram account. Select people to see where their
+communities overlap and inspect how each community connects the selected contacts.
+
+![Dark demo overview showing selected contacts and their shared-community graph](screenshots/demo-overview.png)
+
+Select a community to focus its graph connections and see every selected person observed in it.
+
+![Light demo view focused on the Design collective community](screenshots/community-detail.png)
 
 ## Features
 

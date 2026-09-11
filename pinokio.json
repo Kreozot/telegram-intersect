@@ -1,5 +1,5 @@
 {
   "title": "Telegram Intersect",
-  "description": "A private map of your shared Telegram communities.",
+  "description": "Select people from Telegram and map how their shared communities overlap across the whole selection. Runs locally and never stores message history.",
   "icon": "icon.svg"
 }
