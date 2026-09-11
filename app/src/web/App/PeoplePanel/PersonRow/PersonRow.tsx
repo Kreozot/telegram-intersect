@@ -1,0 +1,42 @@
+import { Checkbox } from "@mantine/core";
+import type { Person, ScanStatus } from "../../../../shared/contracts.js";
+import styles from "./PersonRow.module.css";
+
+interface Props {
+  person: Person;
+  checked: boolean;
+  status: ScanStatus | null;
+  onToggle: (id: string) => void;
+}
+/** Displays one minimal person identity and its scan state without fetching profile or message data. */
+export function PersonRow({ person, checked, status, onToggle }: Props) {
+  const initials = person.name
+    .split(" ")
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("");
+  return (
+    <label
+      htmlFor={`select-${person.id}`}
+      className={`${styles.row} ${checked ? styles.selected : ""}`}
+    >
+      <Checkbox
+        id={`select-${person.id}`}
+        aria-label={`Select ${person.name}`}
+        size="xs"
+        checked={checked}
+        onChange={() => onToggle(person.id)}
+      />
+      <span className={styles.avatar}>{initials}</span>
+      <span className={styles.identity}>
+        <strong>{person.name}</strong>
+        <small>{person.username ? `@${person.username}` : person.sources.join(" · ")}</small>
+      </span>
+      {status && status !== "completed" && (
+        <span className={styles.state} title={status}>
+          {status}
+        </span>
+      )}
+    </label>
+  );
+}

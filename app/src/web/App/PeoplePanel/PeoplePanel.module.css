@@ -1,0 +1,92 @@
+.panel {
+  padding: 26px 20px 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.title {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+}
+.title > span:last-child {
+  color: var(--accent);
+}
+.panel h2 {
+  margin: 18px 0 7px;
+  font-size: 18px;
+  letter-spacing: -0.4px;
+}
+.subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+.imports {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+.tabs button {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  color: var(--muted);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 11px;
+}
+.tabs .active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0 13px;
+}
+.selection button {
+  background: none;
+  color: var(--muted);
+  border: 0;
+  font-size: 10px;
+  cursor: pointer;
+}
+.list {
+  max-height: 440px;
+  min-height: 180px;
+  overflow-y: auto;
+  margin: 0 -8px;
+}
+.empty {
+  padding: 25px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.bottom {
+  border-top: 1px solid var(--line);
+  padding: 20px 0 10px;
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+.bottom > div {
+  margin-bottom: 14px;
+}
+.bottom strong {
+  color: var(--text);
+}
+.bottom p {
+  font-size: 10px;
+  text-align: center;
+  margin: 12px 0;
+}
