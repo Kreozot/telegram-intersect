@@ -107,8 +107,8 @@ export function Explorer({
         <div className={styles.legend}>
           <span className={styles.personDot} />
           People
-          <span className={styles.groupDot} />
-          Communities · number = selected people
+          <span className={styles.temperatureScale} />
+          Communities · cool = fewer, warm = more · number = selected people
         </div>
         {!people && (
           <div className={styles.empty}>

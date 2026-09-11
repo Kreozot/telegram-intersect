@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { GraphData } from "../../../../shared/contracts.js";
 import styles from "./GraphCanvas.module.css";
 import { graphStyles } from "./graph-style.js";
+import { addGroupTemperatureColors } from "./group-temperature.js";
 import { separateNodes } from "./separate-nodes.js";
 
 interface Props {
@@ -24,7 +25,7 @@ export function GraphCanvas({ graph, focus, onFocus }: Props) {
     const cy = cytoscape({
       container: element,
       elements: [
-        ...data.nodes.map((node) => ({ data: node })),
+        ...addGroupTemperatureColors(data.nodes).map((node) => ({ data: node })),
         ...data.edges.map((edge) => ({ data: edge })),
       ],
       style: graphStyles(element),

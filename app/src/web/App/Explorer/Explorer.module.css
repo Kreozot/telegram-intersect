@@ -84,16 +84,19 @@
   color: var(--muted);
   pointer-events: none;
 }
-.personDot,
-.groupDot {
+.personDot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   display: inline-block;
   background: #8199bf;
 }
-.groupDot {
-  background: var(--accent);
+.temperatureScale {
+  width: 54px;
+  height: 7px;
+  border-radius: 999px;
+  display: inline-block;
+  background: linear-gradient(90deg, #3f72e9, #3fd5d5, #63d33f, #e6dc3f, #e94141);
   margin-left: 12px;
 }
 .empty {
