@@ -3,26 +3,31 @@
   display: flex;
   flex-direction: column;
 }
+
 .workspace {
   display: grid;
   grid-template-columns: 290px minmax(300px, 1fr) 280px;
   flex: 1;
   min-height: 720px;
 }
+
 .sidebar {
   background: var(--panel);
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
 }
+
 .alert {
   margin: 12px 20px 0;
 }
+
 .actions {
   display: flex;
   gap: 10px;
   margin-top: 12px;
 }
+
 .accountActions {
   display: flex;
   flex-wrap: wrap;
@@ -31,7 +36,8 @@
   border-top: 1px solid var(--line);
   margin-top: auto;
 }
-.accountActions button {
+
+.accountButton {
   color: var(--muted);
   background: none;
   border: 0;
@@ -39,6 +45,7 @@
   cursor: pointer;
   font-size: 11px;
 }
+
 .footer {
   display: flex;
   align-items: center;
@@ -48,9 +55,11 @@
   color: var(--muted);
   font-size: 11px;
 }
-.footer > span:last-child {
+
+.footerTagline {
   margin-left: auto;
 }
+
 .dot {
   width: 6px;
   height: 6px;
@@ -61,7 +70,8 @@
   .workspace {
     grid-template-columns: 260px minmax(300px, 1fr);
   }
-  .workspace > aside:last-child {
+
+  .detailsPanel {
     grid-column: 1 / -1;
     border-top: 1px solid var(--line);
   }
@@ -71,10 +81,12 @@
     display: flex;
     flex-direction: column;
   }
+
   .sidebar {
     border-right: 0;
   }
-  .footer > span:last-child {
+
+  .footerTagline {
     display: none;
   }
 }

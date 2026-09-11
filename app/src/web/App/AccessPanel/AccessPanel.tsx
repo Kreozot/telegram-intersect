@@ -20,13 +20,16 @@ export function AccessPanel({ busy, onUnlock, onDemo }: Props) {
   return (
     <section className={styles.panel}>
       <span className={styles.eyebrow}>YOUR PRIVATE WORKSPACE</span>
-      <h1>
+      <h1 className={styles.heading}>
         Find the communities
         <br />
         you share.
       </h1>
-      <p>Connect the dots between your people and the groups that bring them together.</p>
+      <p className={styles.description}>
+        Connect the dots between your people and the groups that bring them together.
+      </p>
       <form
+        className={styles.form}
         onSubmit={(event) => {
           void submit(event);
         }}
@@ -43,12 +46,14 @@ export function AccessPanel({ busy, onUnlock, onDemo }: Props) {
         </Button>
       </form>
       <p className={styles.hint}>
-        On this computer, open <code>app/data/access-key</code>. For a hosted workspace, use the key
-        configured by its owner.
+        On this computer, open <code className={styles.hintCode}>app/data/access-key</code>. For a
+        hosted workspace, use the key configured by its owner.
       </p>
       <div className={styles.divider} />
-      <h3>Just looking around?</h3>
-      <p>Explore a sample map with fictional people. No account needed.</p>
+      <h3 className={styles.demoHeading}>Just looking around?</h3>
+      <p className={styles.description}>
+        Explore a sample map with fictional people. No account needed.
+      </p>
       <Button variant="default" fullWidth onClick={onDemo}>
         Explore the demo →
       </Button>

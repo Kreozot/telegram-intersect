@@ -102,7 +102,10 @@ npm test
 npm run build
 ```
 
-Format supported source files with `npm run format`. Biome configuration is in the repository root. Tests use Node's runner and synthetic Telegram objects; they require no account or network.
+Format supported source files with `npm run format`. Biome configuration is in the repository root,
+and Stylelint configuration is in `app/stylelint.config.mjs`. Run `npm run lint:css` for a focused
+stylesheet check. Tests use Node's runner and synthetic Telegram objects; they require no account or
+network.
 
 For a port conflict, stop the other instance or change PORT. If saved authorization cannot be restored, check connectivity and the original SESSION_ENCRYPTION_KEY, or sign in again. Do not replace the encryption key while expecting existing encrypted sessions to remain readable. If catalog loading fails, existing data is preserved. A flood wait must expire before retrying. If a scan was interrupted, unlock and use **Resume unfinished scan**.
 

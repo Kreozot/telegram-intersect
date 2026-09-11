@@ -24,11 +24,13 @@ export function LoginPanel({ status, busy, onStart, onAnswer, onCancel }: Props)
   return (
     <section className={styles.panel}>
       <span className={styles.eyebrow}>01 / CONNECT</span>
-      <h2>
+      <h2 className={styles.heading}>
         Your Telegram.
         <br />A new perspective.
       </h2>
-      <p>Sign in to discover shared groups. Intersect never requests your message history.</p>
+      <p className={styles.statusText}>
+        Sign in to discover shared groups. Intersect never requests your message history.
+      </p>
       {!status.configured ? (
         <Alert title="Configure your Telegram app" color="teal">
           Add TELEGRAM_API_ID and TELEGRAM_API_HASH to app/.env, then restart. See the README for
@@ -63,9 +65,14 @@ export function LoginPanel({ status, busy, onStart, onAnswer, onCancel }: Props)
               alt="Telegram sign-in QR code. Scan from Telegram Settings, Devices, Link Desktop Device."
             />
           )}
-          {status.stage === "qr" && <p>Telegram → Settings → Devices → Link Desktop Device.</p>}
+          {status.stage === "qr" && (
+            <p className={styles.statusText}>
+              Telegram → Settings → Devices → Link Desktop Device.
+            </p>
+          )}
           {challenge && (
             <form
+              className={styles.form}
               onSubmit={(event) => {
                 void submit(event);
               }}
@@ -94,7 +101,9 @@ export function LoginPanel({ status, busy, onStart, onAnswer, onCancel }: Props)
               </Button>
             </form>
           )}
-          {status.stage === "connecting" && <p>Connecting securely…</p>}
+          {status.stage === "connecting" && (
+            <p className={styles.statusText}>Connecting securely…</p>
+          )}
           {!["idle", "error"].includes(status.stage) && (
             <Button
               variant="subtle"

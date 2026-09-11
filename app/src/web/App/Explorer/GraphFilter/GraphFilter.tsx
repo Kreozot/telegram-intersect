@@ -20,7 +20,7 @@ export function GraphFilter({ enabled, disabled, visible, total, onChange }: Pro
         label="Only intersections (2+ selected people)"
         size="xs"
       />
-      <span>
+      <span className={styles.label}>
         {visible} of {total} communities shown
       </span>
     </div>

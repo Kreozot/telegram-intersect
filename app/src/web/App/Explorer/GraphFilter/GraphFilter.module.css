@@ -6,7 +6,8 @@
   gap: 12px;
   margin-bottom: 16px;
 }
-.toolbar > span {
+
+.label {
   font-size: 11px;
   color: var(--muted);
 }

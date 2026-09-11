@@ -26,6 +26,7 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 ## Verification and release gates
 
 - [x] Complete lint/type/test/build verification.
+- [x] Add Stylelint standard CSS checks alongside Biome's broader source checks.
 - [x] Owner confirmed QR login with two-step verification and contact loading.
 - [ ] Verify phone/code login with the owner's actual Telegram account.
 - [ ] Verify live Telegram contacts, archived dialogs, pagination, migrations, and flood-wait behavior.

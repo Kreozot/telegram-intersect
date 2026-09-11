@@ -4,6 +4,7 @@
   flex-direction: column;
   flex: 1;
 }
+
 .title {
   display: flex;
   justify-content: space-between;
@@ -12,20 +13,24 @@
   font-size: 10px;
   letter-spacing: 1.4px;
 }
-.title > span:last-child {
+
+.titleCount {
   color: var(--accent);
 }
+
 .imports {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
 }
+
 .tabs {
   display: flex;
   border-bottom: 1px solid var(--line);
   margin-bottom: 18px;
 }
-.tabs button {
+
+.tabButton {
   flex: 1;
   padding: 12px 0;
   background: none;
@@ -35,16 +40,19 @@
   cursor: pointer;
   font-size: 11px;
 }
-.tabs .active {
+
+.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
 .selection {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 18px 0 13px;
 }
+
 .sortControls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -52,27 +60,32 @@
   gap: 12px;
   padding-top: 12px;
 }
-.sortControls label {
+
+.sortLabel {
   font-size: 10px;
 }
-.selection button {
+
+.selectionButton {
   background: none;
   color: var(--muted);
   border: 0;
   font-size: 10px;
   cursor: pointer;
 }
+
 .list {
   max-height: 440px;
   min-height: 180px;
   overflow-y: auto;
   margin: 0 -8px;
 }
+
 .empty {
   padding: 25px 8px;
   color: var(--muted);
   font-size: 12px;
 }
+
 .bottom {
   border-top: 1px solid var(--line);
   padding: 20px 0 10px;
@@ -80,13 +93,16 @@
   font-size: 12px;
   color: var(--muted);
 }
-.bottom > div {
+
+.selectionSummary {
   margin-bottom: 14px;
 }
-.bottom strong {
+
+.selectionCount {
   color: var(--text);
 }
-.bottom p {
+
+.bottomNote {
   font-size: 10px;
   text-align: center;
   margin: 12px 0;

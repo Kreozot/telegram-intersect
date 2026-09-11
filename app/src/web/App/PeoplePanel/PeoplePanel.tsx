@@ -88,7 +88,7 @@ export function PeoplePanel({
     <section className={styles.panel}>
       <div className={styles.title}>
         <span>YOUR PEOPLE</span>
-        <span>{people.length}</span>
+        <span className={styles.titleCount}>{people.length}</span>
       </div>
       {!demo && (
         <div className={styles.imports}>
@@ -121,7 +121,7 @@ export function PeoplePanel({
           <button
             type="button"
             key={item}
-            className={source === item ? styles.active : ""}
+            className={`${styles.tabButton} ${source === item ? styles.active : ""}`}
             onClick={() => setSource(item)}
           >
             {item === "all" ? "Everyone" : item === "contacts" ? "Contacts" : "Dialogs"}
@@ -149,6 +149,7 @@ export function PeoplePanel({
         />
         <Checkbox
           size="xs"
+          classNames={{ label: styles.sortLabel }}
           label="Selected first"
           checked={selectedFirst}
           onChange={(event) => setSelectedFirst(event.currentTarget.checked)}
@@ -163,6 +164,7 @@ export function PeoplePanel({
           onChange={selectVisible}
         />
         <button
+          className={styles.selectionButton}
           type="button"
           onClick={() => {
             preserveSelectionScroll();
@@ -198,8 +200,9 @@ export function PeoplePanel({
         )}
       </div>
       <div className={styles.bottom}>
-        <div>
-          <strong>{selected.size}</strong> / {maxSelectedPeople} people selected
+        <div className={styles.selectionSummary}>
+          <strong className={styles.selectionCount}>{selected.size}</strong> / {maxSelectedPeople}{" "}
+          people selected
         </div>
         {scan?.running ? (
           <Button
@@ -222,7 +225,7 @@ export function PeoplePanel({
             Resume unfinished scan
           </Button>
         ) : null}
-        <p>
+        <p className={styles.bottomNote}>
           Selecting people checks their shared groups in the background. Only groups shared with
           your account are requested.
         </p>

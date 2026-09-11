@@ -40,22 +40,26 @@ export function Explorer({
     <section className={styles.explorer}>
       <div className={styles.heading}>
         <div>
-          <h1>Your shared communities</h1>
+          <h1 className={styles.headingTitle}>Your shared communities</h1>
         </div>
         <span className={styles.badge}>{demo ? "SAMPLE MAP" : "PERSON ↔ GROUP"}</span>
       </div>
       <div className={styles.metrics}>
-        <div>
-          <strong>{people}</strong>
-          <span>People on map</span>
+        <div className={styles.metric}>
+          <strong className={styles.metricValue}>{people}</strong>
+          <span className={styles.metricLabel}>People on map</span>
         </div>
-        <div>
-          <strong>{groups || selectionComplete ? groups : "—"}</strong>
-          <span>Shared communities</span>
+        <div className={styles.metric}>
+          <strong className={styles.metricValue}>
+            {groups || selectionComplete ? groups : "—"}
+          </strong>
+          <span className={styles.metricLabel}>Shared communities</span>
         </div>
-        <div>
-          <strong>{graph.edges.length || selectionComplete ? graph.edges.length : "—"}</strong>
-          <span>Observed connections</span>
+        <div className={styles.metric}>
+          <strong className={styles.metricValue}>
+            {graph.edges.length || selectionComplete ? graph.edges.length : "—"}
+          </strong>
+          <span className={styles.metricLabel}>Observed connections</span>
         </div>
       </div>
       {unscanned > 0 && (
@@ -68,7 +72,7 @@ export function Explorer({
       )}
       {scan && (
         <div className={styles.progress}>
-          <span>
+          <span className={styles.progressSummary}>
             {scan.running
               ? waiting
                 ? `Telegram pause · resumes after ${new Date(waiting.retryAt ?? 0).toLocaleTimeString()}`
@@ -76,7 +80,7 @@ export function Explorer({
               : completed < people
                 ? "Partial map · some people are unfinished"
                 : "Scan complete"}
-            <b>
+            <b className={styles.progressValue}>
               {completed} / {people}
             </b>
           </span>
@@ -107,8 +111,8 @@ export function Explorer({
         {!people && (
           <div className={styles.empty}>
             <LogoMark className={styles.emptyIcon} />
-            <h2>Every connection has a context.</h2>
-            <p>
+            <h2 className={styles.emptyTitle}>Every connection has a context.</h2>
+            <p className={styles.emptyText}>
               Select people to discover shared groups in the background.
               <br />
               Your map will grow here, one connection at a time.

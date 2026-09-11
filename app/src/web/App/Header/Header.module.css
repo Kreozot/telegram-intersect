@@ -7,52 +7,62 @@
   background: var(--panel);
   border-bottom: 1px solid var(--line);
 }
+
 .brand {
   display: flex;
   gap: 12px;
   align-items: center;
   min-width: 223px;
 }
-.brand > div {
+
+.brandText {
   display: flex;
   align-items: baseline;
   gap: 10px;
 }
+
 .mark {
   color: var(--accent);
   width: 48px;
   height: 48px;
   flex: 0 0 auto;
 }
-.brand strong {
+
+.brandName {
   font-size: 26px;
   letter-spacing: -1px;
   line-height: 1;
 }
-.brand :where(strong) span {
+
+.brandAccent {
   color: var(--accent);
 }
-.brand small {
+
+.brandTagline {
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 1px;
   white-space: nowrap;
 }
+
 .context {
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.5px;
 }
-.context span {
+
+.contextSeparator {
   margin: 0 12px;
   color: var(--line);
 }
+
 .nav {
   margin-left: auto;
   display: flex;
   gap: 10px;
   align-items: center;
 }
+
 .status {
   font-size: 9px;
   color: var(--accent);
@@ -68,9 +78,11 @@
     flex-wrap: wrap;
     gap: 12px;
   }
+
   .nav {
     margin-left: 0;
   }
+
   .status {
     display: none;
   }

@@ -1,32 +1,38 @@
 .panel {
   padding: 30px 24px;
 }
+
 .eyebrow {
   color: var(--accent);
   letter-spacing: 1.5px;
   font-size: 10px;
 }
-.panel h2 {
+
+.heading {
   font-size: 25px;
   line-height: 1.4;
   letter-spacing: -0.5px;
 }
-.panel p {
+
+.statusText {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.7;
 }
+
 .buttons,
-.panel form {
+.form {
   display: grid;
   gap: 14px;
   margin: 22px 0;
 }
+
 .qr {
   width: 100%;
   max-width: 240px;
   border-radius: 12px;
 }
+
 .note {
   border-top: 1px solid var(--line);
   margin-top: 28px;

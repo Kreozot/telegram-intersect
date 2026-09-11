@@ -39,11 +39,17 @@ export const PersonRow = memo(function PersonRow({
         onChange={() => onToggle(person.id)}
       />
       <span className={styles.avatar} aria-hidden="true">
-        {person.avatarUrl ? <img src={person.avatarUrl} alt="" /> : initials}
+        {person.avatarUrl ? (
+          <img className={styles.avatarImage} src={person.avatarUrl} alt="" />
+        ) : (
+          initials
+        )}
       </span>
       <span className={styles.identity}>
-        <strong>{person.name}</strong>
-        <small>{person.username ? `@${person.username}` : person.sources.join(" · ")}</small>
+        <strong className={styles.identityName}>{person.name}</strong>
+        <small className={styles.identityMeta}>
+          {person.username ? `@${person.username}` : person.sources.join(" · ")}
+        </small>
       </span>
       <span className={styles.trailing}>
         {status && status !== "completed" && (

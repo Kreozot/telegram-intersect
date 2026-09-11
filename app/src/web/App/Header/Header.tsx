@@ -16,15 +16,15 @@ export function Header({ demo, connected, authenticated, onDemo, onLock }: Props
     <header className={styles.header}>
       <div className={styles.brand}>
         <LogoMark className={styles.mark} />
-        <div>
-          <strong>
-            intersect<span>.</span>
+        <div className={styles.brandText}>
+          <strong className={styles.brandName}>
+            intersect<span className={styles.brandAccent}>.</span>
           </strong>
-          <small>A map of your people</small>
+          <small className={styles.brandTagline}>A map of your people</small>
         </div>
       </div>
       <div className={styles.context}>
-        WORKSPACE <span>/</span> Shared communities
+        WORKSPACE <span className={styles.contextSeparator}>/</span> Shared communities
       </div>
       <nav className={styles.nav}>
         <span className={styles.status}>

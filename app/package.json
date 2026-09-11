@@ -11,8 +11,9 @@
     "debug": "node --inspect=127.0.0.1:9229 --env-file-if-exists=.env --import tsx src/server/main.ts --dev",
     "build": "tsc --noEmit && vite build && tsc -p tsconfig.server.json",
     "start": "node --env-file-if-exists=.env dist/server/server/main.js",
-    "check": "biome check . ../biome.json && tsc --noEmit",
-    "format": "biome check --write .",
+    "check": "biome check . ../biome.json && stylelint \"src/**/*.css\" && tsc --noEmit",
+    "format": "biome check --write . && stylelint \"src/**/*.css\" --fix",
+    "lint:css": "stylelint \"src/**/*.css\"",
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
@@ -35,6 +36,8 @@
     "@types/qrcode": "1.5.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "stylelint": "17.15.0",
+    "stylelint-config-standard": "40.0.0",
     "tsx": "4.23.13",
     "typescript": "7.0.2",
     "vite": "8.3.0"

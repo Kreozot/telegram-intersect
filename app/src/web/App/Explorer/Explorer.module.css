@@ -4,18 +4,21 @@
   flex-direction: column;
   min-width: 0;
 }
+
 .heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 15px;
 }
-.heading h1 {
+
+.headingTitle {
   font-size: 26px;
   font-weight: 550;
   letter-spacing: -0.8px;
   margin: 0;
 }
+
 .badge {
   font-size: 8px;
   letter-spacing: 1px;
@@ -25,6 +28,7 @@
   color: var(--muted);
   white-space: nowrap;
 }
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -33,26 +37,31 @@
   background: var(--panel);
   border-radius: 10px;
 }
-.metrics > div {
+
+.metric {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
   border-right: 1px solid var(--line);
 }
-.metrics > div:last-child {
+
+.metric:last-child {
   border-right: 0;
 }
-.metrics strong {
+
+.metricValue {
   font-size: 25px;
   font-weight: 500;
 }
-.metrics span {
+
+.metricLabel {
   font-size: 10px;
   color: var(--muted);
   max-width: 90px;
   line-height: 1.6;
 }
+
 .canvas {
   position: relative;
   flex: 1;
@@ -63,6 +72,7 @@
   background-image: radial-gradient(var(--line) 0.8px, transparent 0.8px);
   background-size: 22px 22px;
 }
+
 .legend {
   position: absolute;
   bottom: 18px;
@@ -74,6 +84,7 @@
   color: var(--muted);
   pointer-events: none;
 }
+
 .personDot {
   width: 7px;
   height: 7px;
@@ -81,6 +92,7 @@
   display: inline-block;
   background: #8199bf;
 }
+
 .temperatureScale {
   width: 54px;
   height: 7px;
@@ -89,6 +101,7 @@
   background: linear-gradient(90deg, #3f72e9, #3fd5d5, #63d33f, #e6dc3f, #e94141);
   margin-left: 12px;
 }
+
 .empty {
   position: absolute;
   inset: 0;
@@ -99,21 +112,25 @@
   text-align: center;
   pointer-events: none;
 }
+
 .emptyIcon {
   width: 96px;
   height: 96px;
   color: var(--accent);
   opacity: 0.45;
 }
-.empty h2 {
+
+.emptyTitle {
   font-size: 18px;
   font-weight: 500;
 }
-.empty p {
+
+.emptyText {
   font-size: 12px;
   color: var(--muted);
   line-height: 1.9;
 }
+
 .caption {
   padding-top: 16px;
   font-size: 10px;
@@ -122,9 +139,11 @@
   justify-content: space-between;
   align-items: center;
 }
+
 .progress {
   margin: 0 0 17px;
 }
+
 .scanHint {
   margin: 0 0 17px;
   padding: 12px 15px;
@@ -135,14 +154,16 @@
   font-size: 12px;
   line-height: 1.6;
 }
-.progress > span {
+
+.progressSummary {
   display: flex;
   justify-content: space-between;
   margin-bottom: 9px;
   color: var(--muted);
   font-size: 10px;
 }
-.progress b {
+
+.progressValue {
   color: var(--accent);
   font-weight: 500;
 }
@@ -150,10 +171,12 @@
   .explorer {
     padding: 24px 16px;
   }
+
   .badge {
     display: none;
   }
-  .metrics > div {
+
+  .metric {
     flex-direction: column;
     gap: 4px;
     align-items: flex-start;

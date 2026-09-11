@@ -5,24 +5,28 @@
   display: flex;
   flex-direction: column;
 }
+
 .eyebrow {
   color: var(--muted);
   font-size: 9px;
   letter-spacing: 1.5px;
 }
-.panel h2 {
+
+.title {
   font-size: 19px;
   font-weight: 550;
   margin: 20px 0 10px;
   letter-spacing: -0.4px;
   overflow-wrap: anywhere;
 }
-.panel p {
+
+.description {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.9;
   margin: 0 0 24px;
 }
+
 .subhead {
   display: flex;
   justify-content: space-between;
@@ -32,9 +36,11 @@
   letter-spacing: 1px;
   border-top: 1px solid var(--line);
 }
-.subhead span {
+
+.subheadCount {
   color: var(--accent);
 }
+
 .items {
   display: flex;
   flex-direction: column;
@@ -42,7 +48,8 @@
   max-height: 450px;
   overflow-y: auto;
 }
-.items button {
+
+.itemButton {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -55,21 +62,25 @@
   color: var(--text);
   cursor: pointer;
 }
-.items button:hover {
+
+.itemButton:hover {
   border-color: var(--accent);
   background: var(--soft);
 }
-.items button > span:nth-child(2) {
+
+.itemLabel {
   flex: 1;
   font-size: 11px;
   line-height: 1.5;
 }
-.items small {
+
+.itemMeta {
   display: block;
   color: var(--muted);
   font-size: 9px;
   margin-top: 4px;
 }
+
 .symbol {
   width: 25px;
   height: 25px;
@@ -79,10 +90,12 @@
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
+
 .count {
   color: var(--accent);
   font-size: 11px;
 }
+
 .insight {
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--accent) 3%, transparent);
@@ -90,27 +103,32 @@
   padding: 18px;
   margin-top: auto;
 }
-.insight > span {
+
+.insightIcon {
   color: var(--accent);
   font-size: 20px;
   display: block;
   margin-bottom: 12px;
 }
-.insight strong {
+
+.insightTitle {
   font-size: 11px;
   font-weight: 500;
 }
-.insight p {
+
+.insightText {
   margin: 10px 0 0;
   font-size: 10px;
   line-height: 1.9;
 }
+
 .placeholder {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.8;
   padding: 25px 0;
 }
+
 .back {
   border: 0;
   background: none;
@@ -120,6 +138,7 @@
   cursor: pointer;
   font-size: 11px;
 }
+
 .coverage {
   display: grid;
   gap: 8px;
@@ -127,6 +146,7 @@
   font-size: 10px;
   color: var(--muted);
 }
-.coverage strong {
+
+.coverageStatus {
   color: var(--text);
 }

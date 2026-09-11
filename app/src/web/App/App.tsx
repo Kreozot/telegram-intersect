@@ -109,10 +109,18 @@ export function App() {
           )}
           {workspace.authenticated && connected && !workspace.demo && (
             <div className={styles.accountActions}>
-              <button type="button" onClick={() => setConfirm("data")}>
+              <button
+                className={styles.accountButton}
+                type="button"
+                onClick={() => setConfirm("data")}
+              >
                 Clear local data
               </button>
-              <button type="button" onClick={() => setConfirm("logout")}>
+              <button
+                className={styles.accountButton}
+                type="button"
+                onClick={() => setConfirm("logout")}
+              >
                 Disconnect Telegram
               </button>
             </div>
@@ -132,6 +140,7 @@ export function App() {
           scan={workspace.snapshot.scan}
         />
         <DetailsPanel
+          className={styles.detailsPanel ?? ""}
           graph={visibleGraph}
           focus={focus}
           onFocus={setFocus}
@@ -143,7 +152,7 @@ export function App() {
         {workspace.demo
           ? "Synthetic demo · no Telegram requests"
           : "Private workspace · no message history requested or stored"}
-        <span>Shared context, made visible.</span>
+        <span className={styles.footerTagline}>Shared context, made visible.</span>
       </footer>
     </div>
   );
