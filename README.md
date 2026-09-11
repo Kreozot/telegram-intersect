@@ -50,9 +50,10 @@ On first startup, local secrets are generated in `app/data/`. To unlock your wor
 3. Fill in `TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, then restart the server.
 4. Unlock the workspace and sign in with QR or phone/code. For QR, use Telegram → Settings → Devices → Link Desktop Device.
 5. Load contacts, dialog identities, or both. Choose a source tab, search if needed, and use **Select visible** or individual checkboxes.
-6. Click **Build community map**. Select a community or graph node to inspect connections.
+6. Select people; their shared groups are checked asynchronously and the map grows as results arrive.
+   Select a community or graph node to inspect connections.
 
-Loading contacts and selecting people do not automatically query their groups. Until you build the map, community/connection counts show **—** (unknown). A zero is only confirmed after every selected person has completed scanning; partial scans may already show observed connections.
+Loading contacts alone does not query groups. Selecting people adds them to a sequential background scan after a short debounce. Until observations arrive, community/connection counts show **—** (unknown). A zero is only confirmed after every selected person has completed scanning; partial scans may already show observed connections. Completed observations are reused when a person is selected again.
 
 For two or more selected people, **Only intersections** initially shows groups observed for at least two of them. Turn it off to include groups observed for just one selected person. The displayed/total counter explains this filter; summary metrics always describe the full selection. People appear as circular avatars with naturally sized name labels underneath, while group markers show the number of selected people. Hover or select a group for its name, and select a person to highlight their connections. Full titles remain available in the details panel.
 
@@ -146,6 +147,7 @@ The owner has confirmed QR login with two-step verification and contact loading.
 - [Architecture](docs/architecture.md)
 - [Technology decisions](docs/decisions/0001-stack-proposal.md)
 - [Implementation and privacy decisions](docs/decisions/0002-implementation-and-privacy.md)
+- [Selection-triggered scan decision](docs/decisions/0004-selection-triggered-scans.md)
 - [Coding practices](docs/coding-practices.md)
 - [Code style](docs/code-style.md)
 - [Agent instructions](AGENTS.md)

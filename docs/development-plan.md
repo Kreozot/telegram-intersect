@@ -12,6 +12,7 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 - [x] Implement normalized people discovery, independent source merging, filters, search, and selection.
 - [x] Add non-blocking static profile-avatar loading with authenticated local caching.
 - [x] Implement sequential common-group scans, pagination, flood waits, checkpoint persistence, cancellation, and restart/resume behavior.
+- [x] Trigger common-group scans from selection and allow the active durable queue to expand.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
 - [x] Add Pinokio runtime/install/start/update/dependency-reset scripts.
 - [x] Add README setup, configuration, launch, debug, hosting, and Pinokio instructions.
@@ -36,7 +37,7 @@ Initial synthetic tests cover privacy normalization, method blocking, encryption
 
 Dense-map readability: replaced always-visible community titles with compact count markers and hover/selection names, emphasized people, added a cool-to-warm group color scale for observed selected-person counts, added a default optional intersection filter, and separated residual node collisions after CoSE. Browser verification uses a synthetic 3-person, 135-community, 187-edge fixture in both filtered and complete views. Automated tests cover filter integrity, temperature-scale derivation, and collision separation; arbitrary large datasets remain unbenchmarked.
 
-An owner-reported zero-community result was traced to an imported catalog with no scan record. Catalog import and selection do not run group discovery. The explorer now shows an unknown count until observations establish a value, explains the explicit Build community map action, and identifies unscanned people in their details. Zero is shown for an empty selection result only after all selected people have completed scanning.
+An owner-reported zero-community result was traced to an imported catalog with no scan record. Catalog import alone does not run group discovery. Selecting people now queues discovery asynchronously, and the explorer shows an unknown count until observations establish a value. Zero is shown for an empty selection result only after all selected people have completed scanning.
 
 The first release has one owner and one Telegram account per installation. Catalog discovery is request-bound rather than a durable background import. Unsupported email/CAPTCHA/registration auth challenges must not silently create accounts or accept terms. Large-graph optimization has not been benchmarked. A previous complete scan remains available through the API; the UI displays the current scan by default.
 

@@ -33,8 +33,8 @@ export function Explorer({
   const unscanned = selectedResults.filter((result) => !result).length;
   const selectionComplete =
     people > 0 && selectedResults.every((result) => result?.status === "completed");
-  const completed = scan?.people.filter((person) => person.status === "completed").length ?? 0;
-  const waiting = scan?.people.find((person) => person.status === "waiting");
+  const completed = selectedResults.filter((person) => person?.status === "completed").length;
+  const waiting = selectedResults.find((person) => person?.status === "waiting");
   return (
     <section className={styles.explorer}>
       <div className={styles.heading}>
@@ -63,9 +63,8 @@ export function Explorer({
         <p className={styles.scanHint} role="status">
           {unscanned} selected {unscanned === 1 ? "person has" : "people have"} not been scanned.
           {scan?.running
-            ? " Wait for this scan to finish, then build a map for your new selection."
-            : " Click Build community map → in the people panel to discover shared groups."}{" "}
-          Loading contacts and selecting people do not scan their groups automatically.
+            ? " The background queue will include the new selection."
+            : " The background scan is being queued."}
         </p>
       )}
       {scan && (
@@ -75,18 +74,14 @@ export function Explorer({
               ? waiting
                 ? `Telegram pause · resumes after ${new Date(waiting.retryAt ?? 0).toLocaleTimeString()}`
                 : "Discovering shared groups…"
-              : completed < scan.people.length
+              : completed < people
                 ? "Partial map · some people are unfinished"
                 : "Scan complete"}
             <b>
-              {completed} / {scan.people.length}
+              {completed} / {people}
             </b>
           </span>
-          <Progress
-            size={3}
-            color="teal"
-            value={scan.people.length ? (completed / scan.people.length) * 100 : 0}
-          />
+          <Progress size={3} color="teal" value={people ? (completed / people) * 100 : 0} />
         </div>
       )}
       <GraphFilter
@@ -115,7 +110,7 @@ export function Explorer({
             <div className={styles.emptyIcon}>⋈</div>
             <h2>Every connection has a context.</h2>
             <p>
-              Select people, then click Build community map → to discover shared groups.
+              Select people to discover shared groups in the background.
               <br />
               Your map will grow here, one connection at a time.
             </p>

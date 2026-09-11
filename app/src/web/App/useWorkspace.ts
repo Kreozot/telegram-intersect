@@ -55,6 +55,23 @@ export function useWorkspace() {
       clearTimeout(timer);
     };
   }, [demo, refresh]);
+  useEffect(() => {
+    if (demo || !authenticated || telegram.stage !== "authorized" || selected.size === 0) return;
+    const ids = [...selected];
+    const timer = setTimeout(() => {
+      /** Enqueues the settled selection without blocking further catalog interaction. */
+      async function enqueueSelection(): Promise<void> {
+        try {
+          await api("scans", "POST", { ids });
+          await refresh();
+        } catch (failure) {
+          setError(failure instanceof Error ? failure.message : "Scan could not be queued.");
+        }
+      }
+      void enqueueSelection();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [authenticated, demo, refresh, selected, telegram.stage]);
   /** Executes a user command and refreshes its outcome while presenting recoverable failures. */
   async function command(path: string, body?: unknown, method = "POST"): Promise<void> {
     setBusy(true);

@@ -133,7 +133,7 @@ export function registerRoutes(
       if (telegram.state().stage !== "authorized")
         throw new RequestError("Sign in to Telegram first.");
       metadata.assertIdle();
-      return scans.start(request.body.ids);
+      return scans.enqueue(request.body.ids);
     },
   );
   app.post("/api/scans/cancel", async () => {

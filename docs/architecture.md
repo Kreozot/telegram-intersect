@@ -24,7 +24,9 @@ No Telegram credential or access hash enters browser contracts. Components priva
 2. TelegramService restores authorization or handles an explicit existing-account login.
 3. MetadataService discovers contacts or dialog identities and normalizes them before persistence.
    After commit, AvatarService sequentially refreshes small static profile images in the background.
-4. ScanService queries common groups for selected people through the metadata gateway, saving each page checkpoint.
+4. Browser selection changes asynchronously enqueue newly selected people after a short debounce.
+   ScanService expands the current durable queue, reuses completed observations, and queries common
+   groups sequentially through the metadata gateway while saving each page checkpoint.
 5. The browser polls normalized snapshots and derives selected-person counts and graph edges locally.
 
 Development uses Vite middleware and HMR on the application HTTP server. Production serves the built static UI and API from one port. Scan jobs run independently of HTTP request lifetimes; catalog discovery currently stays within its initiating request.
@@ -42,6 +44,10 @@ Dialog responses contain incidental top messages; normalization clears that vect
 SQLite stores allowlisted person metadata, server-only access hashes and photo locators, cached static profile images, the current scan, the last fully completed scan, and encrypted authorization material. IDs remain namespaced decimal strings. Scan entries include groups, status, cursor, observation timestamp, and retry time. Avatar URLs are authenticated application endpoints versioned by the cached photo ID; an existing image remains visible until its replacement has been validated and saved.
 
 Each page is persisted atomically. Completed snapshots remain separate from in-progress refreshes. Cancelled or failed scans retain observed edges and checkpoints; they never become authoritative empty results. Restart marks interrupted jobs as cancelled for explicit resume. Rate-limit retry times are retained across restart. The graph shown by default is the current scan; the previous completed snapshot is available through the API.
+
+The current scan can expand while its worker is active. Selection removal is a browser graph concern:
+it neither deletes cached observations nor cancels a provider request already in progress. The worker
+remains sequential, including when a bulk selection appends many people.
 
 Catalog refresh commits only after full source discovery. Source flags are deduplicated and refreshed independently. Discovery, deletion, and scanning reject conflicting operations. A single process owns each database; horizontal scaling is outside this release.
 

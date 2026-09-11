@@ -102,7 +102,6 @@ export function App() {
               onToggle={workspace.toggle}
               onSelect={workspace.setSelected}
               onLoad={(source) => workspace.command("people", { source })}
-              onScan={() => workspace.command("scans", { ids: [...workspace.selected] })}
               onCancel={() => workspace.command("scans/cancel")}
               onResume={() => workspace.command("scans/resume")}
             />

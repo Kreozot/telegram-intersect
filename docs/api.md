@@ -18,14 +18,14 @@ All URLs are relative to the single UI/API origin. JSON request bodies are schem
 | POST | /api/people | Discover { "source": "contacts" } or { "source": "dialogs" } |
 | GET | /api/snapshot | Current people and scan; no access hashes |
 | GET | /api/snapshot/completed | Last complete scan with current catalog |
-| POST | /api/scans | Start { "ids": ["user:123"] } |
+| POST | /api/scans | Add selected `{ "ids": ["user:123"] }` identities to the background queue |
 | POST | /api/scans/cancel | Cancel after current request settles |
 | POST | /api/scans/resume | Resume unfinished entries and retry failures |
 | DELETE | /api/analysis | Remove analysis data, retaining Telegram authorization |
 
 The current catalog can change after a completed scan. A completed snapshot's person IDs may therefore include identities no longer in the current catalog. Each scan has per-person status, groups, and observation times. Only completed means that API pagination for that person finished; it does not guarantee universal membership visibility.
 
-The browser polls /api/telegram and /api/snapshot serially with a 1.8-second interval. Catalog discovery stays within the POST request and preserves old data if it fails. A scan starts in the background; do not repeatedly create new scans while one is active.
+The browser polls /api/telegram and /api/snapshot serially with a 1.8-second interval. Catalog discovery stays within the POST request and preserves old data if it fails. Selection changes are debounced for 250 ms before posting the selected IDs. The endpoint reuses completed observations and may safely append newly selected people while the sequential worker is active.
 
 ## JavaScript (inside the unlocked same-origin UI)
 

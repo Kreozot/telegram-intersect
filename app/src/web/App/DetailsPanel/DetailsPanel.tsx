@@ -43,7 +43,7 @@ export function DetailsPanel({ graph, focus, onFocus, scan }: Props) {
                   ? `Observed ${new Date(result.observedAt).toLocaleString()}`
                   : "Not observed yet"}
               </span>
-              {!result && <span>Click Build community map → to check this person's groups.</span>}
+              {!result && <span>This person's background scan is being queued.</span>}
               {result?.error && <span>{result.error}</span>}
             </div>
           )}
@@ -83,7 +83,7 @@ export function DetailsPanel({ graph, focus, onFocus, scan }: Props) {
           </div>
           {!groups.length && (
             <div className={styles.placeholder}>
-              Your communities will appear here once you build a map.
+              Your communities will appear here as background scans finish.
             </div>
           )}
         </>

@@ -13,7 +13,6 @@ interface Props {
   onToggle: (id: string) => void;
   onSelect: (ids: Set<string>) => void;
   onLoad: (source: PersonSource) => Promise<void>;
-  onScan: () => Promise<void>;
   onCancel: () => Promise<void>;
   onResume: () => Promise<void>;
 }
@@ -27,7 +26,6 @@ export function PeoplePanel({
   onToggle,
   onSelect,
   onLoad,
-  onScan,
   onCancel,
   onResume,
 }: Props) {
@@ -134,16 +132,6 @@ export function PeoplePanel({
         <div>
           <strong>{selected.size}</strong> people selected
         </div>
-        <Button
-          fullWidth
-          disabled={demo || busy || !selected.size || (scan?.running ?? false)}
-          loading={scan?.running ?? false}
-          onClick={() => {
-            void onScan();
-          }}
-        >
-          Build community map →
-        </Button>
         {scan?.running ? (
           <Button
             variant="subtle"
@@ -165,7 +153,10 @@ export function PeoplePanel({
             Resume unfinished scan
           </Button>
         ) : null}
-        <p>Select people, then build the map. Only groups shared with your account are checked.</p>
+        <p>
+          Selecting people checks their shared groups in the background. Only groups shared with
+          your account are requested.
+        </p>
       </div>
     </section>
   );

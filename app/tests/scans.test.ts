@@ -15,6 +15,13 @@ function repository(): Repository {
       sources: ["contacts"],
       accessHash: "1",
     },
+    {
+      id: "user:2",
+      name: "Bob",
+      username: null,
+      sources: ["dialogs"],
+      accessHash: "2",
+    },
   ]);
   return repo;
 }
@@ -92,5 +99,40 @@ test("flood wait cancellation retains a retry checkpoint and resume finishes wit
   resumed.resume();
   await resumed.settled();
   assert.equal(repo.scan()?.people[0]?.status, "completed");
+  repo.close();
+});
+test("adds newly selected people to an active background scan without replacing observations", async () => {
+  const repo = repository();
+  let releaseFirst: (() => void) | undefined;
+  const firstPending = new Promise<void>((resolve) => {
+    releaseFirst = resolve;
+  });
+  const calls: string[] = [];
+  const scans = new ScanService(
+    repo,
+    {
+      commonGroups: async (person) => {
+        calls.push(person.id);
+        if (person.id === "user:1") await firstPending;
+        return {
+          groups: [{ id: `chat:${person.id}`, title: person.name }],
+          nextCursor: null,
+        };
+      },
+    },
+    0,
+  );
+  scans.enqueue(["user:1"]);
+  scans.enqueue(["user:1", "user:2"]);
+  releaseFirst?.();
+  await scans.settled();
+  assert.deepEqual(calls, ["user:1", "user:2"]);
+  assert.deepEqual(
+    repo.scan()?.people.map((person) => [person.personId, person.status]),
+    [
+      ["user:1", "completed"],
+      ["user:2", "completed"],
+    ],
+  );
   repo.close();
 });

@@ -7,6 +7,7 @@ import { RateLimitError, type TelegramGateway } from "../telegram/gateway.js";
 /** Runs one durable, sequential membership scan without coupling HTTP requests to Telegram latency. */
 export class ScanService {
   private active: Promise<void> | null = null;
+  private current: Scan | null = null;
   private cancelled = false;
   private wake: (() => void) | null = null;
   /** Marks interrupted work as resumable when the process restarts. */
@@ -47,6 +48,49 @@ export class ScanService {
     this.launch(scan);
     return scan;
   }
+  /** Adds selected people to the durable scan queue while reusing every saved observation. */
+  enqueue(ids: string[]): Scan {
+    const valid = new Set(this.repo.people().map((person) => person.id));
+    const unique = [...new Set(ids)];
+    if (!unique.length || unique.some((id) => !valid.has(id)))
+      throw new RequestError("Select available people first.");
+    const scan = this.current ??
+      this.repo.scan() ?? {
+        id: randomUUID(),
+        createdAt: new Date().toISOString(),
+        running: false,
+        people: [],
+      };
+    const existing = new Map(scan.people.map((person) => [person.personId, person]));
+    for (const personId of unique) {
+      const result = existing.get(personId);
+      if (!result) {
+        scan.people.push({
+          personId,
+          status: "queued",
+          groups: [],
+          cursor: "0",
+          error: null,
+          retryAt: null,
+          observedAt: null,
+        });
+      } else if (!this.active && result.status !== "completed") {
+        result.status = "queued";
+        result.error = null;
+      }
+    }
+    if (this.active) {
+      this.repo.saveScan(scan);
+      return scan;
+    }
+    if (scan.people.some((person) => person.status === "queued")) {
+      scan.running = true;
+      this.launch(scan);
+    } else {
+      this.repo.saveScan(scan);
+    }
+    return scan;
+  }
   /** Resumes unfinished people using persisted page cursors while retaining completed results. */
   resume(): Scan {
     if (this.active) throw new RequestError("A scan is already running.");
@@ -75,6 +119,7 @@ export class ScanService {
   /** Saves the initial job before scheduling and contains background failures. */
   private launch(scan: Scan): void {
     this.cancelled = false;
+    this.current = scan;
     this.repo.saveScan(scan);
     this.active = this.run(scan)
       .catch(() => {
@@ -84,6 +129,7 @@ export class ScanService {
       })
       .finally(() => {
         this.active = null;
+        this.current = null;
       });
   }
   /** Waits without blocking HTTP, with an interruptible timer for cancel and shutdown. */
