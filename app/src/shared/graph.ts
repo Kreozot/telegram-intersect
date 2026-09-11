@@ -44,11 +44,13 @@ export function mergePeople(people: readonly Person[]): Person[] {
   for (const person of people) {
     const old = merged.get(person.id);
     const avatarUrl = person.avatarUrl ?? old?.avatarUrl;
+    const dialogOrder = person.dialogOrder ?? old?.dialogOrder;
     merged.set(person.id, {
       id: person.id,
       name: person.name,
       username: person.username,
       sources: [...new Set([...(old?.sources ?? []), ...person.sources])],
+      ...(dialogOrder !== undefined ? { dialogOrder } : {}),
       ...(avatarUrl ? { avatarUrl } : {}),
     });
   }

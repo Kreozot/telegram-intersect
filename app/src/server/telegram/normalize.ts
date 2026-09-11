@@ -44,9 +44,18 @@ export function normalizeDialogs(response: Api.messages.TypeDialogs): DialogPage
           : [],
       ),
     );
-    const people = response.users.flatMap((user) => {
-      const person = normalizePerson(user, "dialogs");
-      return person && privateIds.has(user.id.toString()) ? [person] : [];
+    const peopleById = new Map(
+      response.users.flatMap((user) => {
+        const person = normalizePerson(user, "dialogs");
+        return person && privateIds.has(user.id.toString())
+          ? [[user.id.toString(), person] as const]
+          : [];
+      }),
+    );
+    const people = response.dialogs.flatMap((dialog) => {
+      if (!(dialog instanceof Api.Dialog) || !(dialog.peer instanceof Api.PeerUser)) return [];
+      const person = peopleById.get(dialog.peer.userId.toString());
+      return person ? [person] : [];
     });
     if (!(response instanceof Api.messages.DialogsSlice) || response.dialogs.length === 0)
       return { people, next: null };

@@ -11,6 +11,7 @@ Do not interpret this exception as authorization to fetch message history, searc
 | Data | Retention | Purpose |
 | --- | --- | --- |
 | Person ID, display name, optional username, source flags | SQLite until clear/disconnect | Selection and graph labels |
+| Dialog activity ordinal | SQLite until dialog refresh or clear/disconnect | Sort people by Telegram's returned dialog order |
 | Person access hash | Server-side SQLite only | Address common-group requests |
 | Profile photo ID/DC locator | Server-side SQLite only | Refresh the small static avatar rendition |
 | Static JPEG/PNG/WebP avatar | SQLite until clear/disconnect | Cache-first person identification in the UI |
@@ -35,7 +36,7 @@ No message attachments or animated avatars are downloaded. Contact phone numbers
 - A dedicated PrivacyClient method constructs only a small peer profile-photo request; generic file-download requests remain rejected.
 - Application RPCs use invokeWithoutUpdates. The SDK's background update manager is replaced with a no-sync implementation.
 - SDK entity caching and protocol logging are disabled.
-- Dialog normalization reduces identities and cursor metadata, clearing messages even on failure.
+- Dialog normalization reduces identities, returned order, and cursor metadata, clearing messages even on failure.
 - Repository writes enumerate allowed fields.
 - Public catalog responses exclude access hashes.
 - Fastify request logging is disabled. Unexpected errors use generic messages.

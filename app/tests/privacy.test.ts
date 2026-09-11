@@ -44,8 +44,24 @@ test("dialog normalization clears message objects and retains only matching priv
     accessHash: bigInt(2),
     firstName: "Alice",
   });
+  const bob = new Api.User({
+    id: bigInt(3),
+    accessHash: bigInt(4),
+    firstName: "Bob",
+  });
   const response = new Api.messages.Dialogs({
     dialogs: [
+      new Api.Dialog({
+        peer: new Api.PeerUser({ userId: bigInt(3) }),
+        topMessage: 8,
+        readInboxMaxId: 0,
+        readOutboxMaxId: 0,
+        unreadCount: 0,
+        unreadMentionsCount: 0,
+        unreadReactionsCount: 0,
+        unreadPollVotesCount: 0,
+        notifySettings: new Api.PeerNotifySettings({}),
+      }),
       new Api.Dialog({
         peer: new Api.PeerUser({ userId: bigInt(1) }),
         topMessage: 7,
@@ -60,6 +76,12 @@ test("dialog normalization clears message objects and retains only matching priv
     ],
     messages: [
       new Api.Message({
+        id: 8,
+        peerId: new Api.PeerUser({ userId: bigInt(3) }),
+        date: 1235,
+        message: "ANOTHER_PRIVATE_MESSAGE_SENTINEL",
+      }),
+      new Api.Message({
         id: 7,
         peerId: new Api.PeerUser({ userId: bigInt(1) }),
         date: 1234,
@@ -67,12 +89,16 @@ test("dialog normalization clears message objects and retains only matching priv
       }),
     ],
     chats: [],
-    users: [alice],
+    users: [alice, bob],
   });
   const result = normalizeDialogs(response);
-  assert.equal(result.people.length, 1);
+  assert.deepEqual(
+    result.people.map((person) => person.id),
+    ["user:3", "user:1"],
+  );
   assert.equal(response.messages.length, 0);
   assert.equal(JSON.stringify(result).includes("PRIVATE_MESSAGE_SENTINEL"), false);
+  assert.equal(JSON.stringify(result).includes("ANOTHER_PRIVATE_MESSAGE_SENTINEL"), false);
   assert.equal(result.next, null);
 });
 
@@ -110,11 +136,13 @@ test("storage strips extra fields and session encryption rejects tampering", () 
     username: null,
     sources: ["contacts"] as ("contacts" | "dialogs")[],
     accessHash: "2",
+    dialogOrder: 4,
     message: "PRIVATE_MESSAGE_SENTINEL",
   };
   repo.savePeople([person]);
   assert.equal(JSON.stringify(repo.storedPeople()).includes("PRIVATE_MESSAGE_SENTINEL"), false);
   assert.equal("accessHash" in (repo.people()[0] ?? {}), false);
+  assert.equal(repo.people()[0]?.dialogOrder, 4);
   repo.saveAvatar({
     personId: "user:1",
     photoId: "9",

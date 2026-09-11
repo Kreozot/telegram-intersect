@@ -56,11 +56,12 @@ export class Repository {
         .all()
         .map((row) => [String(row.person_id), String(row.photo_id)] as const),
     );
-    return this.storedPeople().map(({ id, name, username, sources }) => ({
+    return this.storedPeople().map(({ id, name, username, sources, dialogOrder }) => ({
       id,
       name,
       username,
       sources,
+      ...(dialogOrder !== undefined ? { dialogOrder } : {}),
       ...(avatars.has(id)
         ? {
             avatarUrl: `/api/avatars/${encodeURIComponent(id)}?v=${encodeURIComponent(avatars.get(id) ?? "")}`,
@@ -76,11 +77,12 @@ export class Repository {
   savePeople(people: StoredPerson[]): void {
     this.write(
       "people",
-      people.map(({ id, name, username, sources, accessHash, photo }) => ({
+      people.map(({ id, name, username, sources, dialogOrder, accessHash, photo }) => ({
         id,
         name,
         username,
         sources,
+        ...(dialogOrder !== undefined ? { dialogOrder } : {}),
         accessHash,
         ...(photo ? { photo: { id: photo.id, dcId: photo.dcId } } : {}),
       })),

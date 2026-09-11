@@ -23,6 +23,8 @@ No Telegram credential or access hash enters browser contracts. Components priva
 1. The owner unlocks the browser using a local or configured workspace key.
 2. TelegramService restores authorization or handles an explicit existing-account login.
 3. MetadataService discovers contacts or dialog identities and normalizes them before persistence.
+   Dialog discovery also retains each private dialog's ordinal catalog position for recent-activity
+   sorting, without retaining its message timestamp or content.
    After commit, AvatarService sequentially refreshes small static profile images in the background.
 4. Browser selection changes asynchronously enqueue newly selected people after a short debounce.
    ScanService expands the current durable queue, reuses completed observations, and queries common
@@ -37,7 +39,9 @@ PrivacyClient limits application RPCs to identity, common-group, connection conf
 
 The adapter uses teleproto's update-manager extension surface and its DC-switch helper for QR migration. These integration points are version-sensitive and require rechecking on upgrades. Required SDK handshakes use the SDK transport; the application does not claim that every transport packet passes through the RPC allowlist.
 
-Dialog responses contain incidental top messages; normalization clears that vector in a finally block and returns only people and ephemeral cursor fields. Nothing serializes raw Telegram objects. See privacy.md.
+Dialog responses contain incidental top messages; normalization clears that vector in a finally block
+and returns only ordered people and ephemeral cursor fields. The catalog stores a sequential dialog
+position, not message fields. Nothing serializes raw Telegram objects. See privacy.md.
 
 ## Stored data and scan semantics
 

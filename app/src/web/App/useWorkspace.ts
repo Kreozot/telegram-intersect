@@ -107,13 +107,19 @@ export function useWorkspace() {
     setSelected(new Set());
   }
   /** Toggles one person by stable identity while preserving independent source selections. */
-  function toggle(id: string): void {
-    setSelected((old) => toggleSelection(old, id, maxSelectedPeople));
-  }
+  const toggle = useCallback(
+    (id: string): void => {
+      setSelected((old) => toggleSelection(old, id, maxSelectedPeople));
+    },
+    [maxSelectedPeople],
+  );
   /** Applies bulk selection while preserving earlier choices up to the configured limit. */
-  function select(ids: Set<string>): void {
-    setSelected(limitSelection(new Set(), ids, maxSelectedPeople));
-  }
+  const select = useCallback(
+    (ids: Set<string>): void => {
+      setSelected(limitSelection(new Set(), ids, maxSelectedPeople));
+    },
+    [maxSelectedPeople],
+  );
   return {
     authenticated,
     demo,

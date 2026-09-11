@@ -54,6 +54,16 @@
   justify-content: space-between;
   padding: 18px 0 13px;
 }
+.sortControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+}
+.sortControls label {
+  font-size: 10px;
+}
 .selection button {
   background: none;
   color: var(--muted);

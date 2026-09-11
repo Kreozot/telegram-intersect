@@ -1,4 +1,5 @@
 import { Checkbox } from "@mantine/core";
+import { memo } from "react";
 import type { Person, ScanStatus } from "../../../../shared/contracts.js";
 import styles from "./PersonRow.module.css";
 
@@ -11,7 +12,7 @@ interface Props {
   onToggle: (id: string) => void;
 }
 /** Displays one identity, its cached avatar, and an available completed common-group count. */
-export function PersonRow({
+export const PersonRow = memo(function PersonRow({
   person,
   checked,
   disabled,
@@ -58,4 +59,4 @@ export function PersonRow({
       </span>
     </label>
   );
-}
+});

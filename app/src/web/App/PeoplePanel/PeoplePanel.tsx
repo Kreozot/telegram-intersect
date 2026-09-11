@@ -1,9 +1,10 @@
-import { Button, Checkbox, TextInput } from "@mantine/core";
-import { useState } from "react";
+import { Button, Checkbox, SegmentedControl, TextInput } from "@mantine/core";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { Person, PersonSource, Scan } from "../../../shared/contracts.js";
 import { limitSelection } from "../../../shared/selection.js";
 import styles from "./PeoplePanel.module.css";
 import { PersonRow } from "./PersonRow/PersonRow.js";
+import { type PeopleSort, sortPeople } from "./sort-people.js";
 
 interface Props {
   people: Person[];
@@ -34,14 +35,41 @@ export function PeoplePanel({
 }: Props) {
   const [query, setQuery] = useState("");
   const [source, setSource] = useState<"all" | PersonSource>("all");
-  const filtered = people.filter(
-    (person) =>
-      (source === "all" || person.sources.includes(source)) &&
-      `${person.name} ${person.username ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+  const [sort, setSort] = useState<PeopleSort>("recent");
+  const [selectedFirst, setSelectedFirst] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+  const pendingScrollTop = useRef<number | null>(null);
+  const filtered = sortPeople(
+    people.filter(
+      (person) =>
+        (source === "all" || person.sources.includes(source)) &&
+        `${person.name} ${person.username ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+    ),
+    sort,
+    selectedFirst,
+    selected,
   );
   const allSelected = filtered.length > 0 && filtered.every((person) => selected.has(person.id));
+  useLayoutEffect(() => {
+    if (pendingScrollTop.current === null || !listRef.current) return;
+    listRef.current.scrollTop = pendingScrollTop.current;
+    pendingScrollTop.current = null;
+  });
+  /** Captures the list viewport before selected-first ordering moves keyed rows. */
+  const preserveSelectionScroll = useCallback((): void => {
+    if (selectedFirst && listRef.current) pendingScrollTop.current = listRef.current.scrollTop;
+  }, [selectedFirst]);
+  /** Toggles one row while keeping the current viewport stable during selected-first reordering. */
+  const togglePerson = useCallback(
+    (id: string): void => {
+      preserveSelectionScroll();
+      onToggle(id);
+    },
+    [onToggle, preserveSelectionScroll],
+  );
   /** Selects or clears only currently visible people, leaving other filters' selections intact. */
   function selectVisible(): void {
+    preserveSelectionScroll();
     const next = new Set(selected);
     if (!allSelected) {
       onSelect(
@@ -108,6 +136,26 @@ export function PeoplePanel({
         value={query}
         onChange={(event) => setQuery(event.currentTarget.value)}
       />
+      <div className={styles.sortControls}>
+        <SegmentedControl
+          size="xs"
+          aria-label="Sort people"
+          data={[
+            { value: "recent", label: "Recent" },
+            { value: "alphabetical", label: "A–Z" },
+          ]}
+          value={sort}
+          onChange={(value) => {
+            if (value === "recent" || value === "alphabetical") setSort(value);
+          }}
+        />
+        <Checkbox
+          size="xs"
+          label="Selected first"
+          checked={selectedFirst}
+          onChange={(event) => setSelectedFirst(event.currentTarget.checked)}
+        />
+      </div>
       <div className={styles.selection}>
         <Checkbox
           size="xs"
@@ -116,11 +164,17 @@ export function PeoplePanel({
           indeterminate={!allSelected && filtered.some((p) => selected.has(p.id))}
           onChange={selectVisible}
         />
-        <button type="button" onClick={() => onSelect(new Set())}>
+        <button
+          type="button"
+          onClick={() => {
+            preserveSelectionScroll();
+            onSelect(new Set());
+          }}
+        >
           Clear
         </button>
       </div>
-      <div className={styles.list}>
+      <div className={styles.list} ref={listRef}>
         {filtered.map((person) => {
           const scanResult = scan?.people.find((entry) => entry.personId === person.id);
           return (
@@ -133,7 +187,7 @@ export function PeoplePanel({
               commonGroupCount={
                 scanResult?.status === "completed" ? scanResult.groups.length : null
               }
-              onToggle={onToggle}
+              onToggle={togglePerson}
             />
           );
         })}

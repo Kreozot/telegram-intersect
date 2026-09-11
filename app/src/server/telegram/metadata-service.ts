@@ -47,6 +47,8 @@ export class MetadataService implements TelegramGateway {
             if (person) found.push(person);
           }
       } else {
+        let dialogOrder = 0;
+        const discoveredDialogIds = new Set<string>();
         for (const folderId of [0, 1]) {
           let cursor: { date: number; id: number; peer: Api.TypeInputPeer } = {
             date: 0,
@@ -67,7 +69,12 @@ export class MetadataService implements TelegramGateway {
               }),
             );
             const page = normalizeDialogs(raw);
-            found.push(...page.people);
+            for (const person of page.people) {
+              if (discoveredDialogIds.has(person.id)) continue;
+              discoveredDialogIds.add(person.id);
+              found.push({ ...person, dialogOrder });
+              dialogOrder++;
+            }
             if (!page.next) break;
             const identity = JSON.stringify([
               page.next.date,
@@ -85,13 +92,26 @@ export class MetadataService implements TelegramGateway {
       const merged = new Map<string, StoredPerson>();
       for (const existing of this.repo.storedPeople()) {
         const sources = existing.sources.filter((entry) => entry !== source);
-        if (sources.length) merged.set(existing.id, { ...existing, sources });
+        if (sources.length) {
+          const { dialogOrder: oldDialogOrder, ...rest } = existing;
+          merged.set(existing.id, {
+            ...rest,
+            sources,
+            ...(source !== "dialogs" && oldDialogOrder !== undefined
+              ? { dialogOrder: oldDialogOrder }
+              : {}),
+          });
+        }
       }
-      for (const person of found)
+      for (const person of found) {
+        const existing = merged.get(person.id);
+        const dialogOrder = person.dialogOrder ?? existing?.dialogOrder;
         merged.set(person.id, {
           ...person,
-          sources: [...new Set([...(merged.get(person.id)?.sources ?? []), source])],
+          sources: [...new Set([...(existing?.sources ?? []), source])],
+          ...(dialogOrder !== undefined ? { dialogOrder } : {}),
         });
+      }
       const people = [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));
       this.repo.savePeople(people);
       this.repo.pruneAvatars(people);

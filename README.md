@@ -7,7 +7,7 @@ Select saved contacts or people from private dialogs, scan their groups in commo
 ## Features
 
 - Telegram QR or phone/code sign-in, including two-step verification.
-- Separate contact and dialog discovery, search, source filters, and bulk selection.
+- Separate contact and dialog discovery, search, source filters, activity/A–Z sorting, and bulk selection.
 - Cache-first static profile avatars downloaded sequentially after catalog loading.
 - Cytoscape graph with neighborhood highlighting, zoom, fit, community counts, and a keyboard-accessible details panel.
 - Light and dark themes, plus a clearly labeled synthetic demo requiring no account.

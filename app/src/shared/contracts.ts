@@ -4,6 +4,7 @@ export interface Person {
   name: string;
   username: string | null;
   sources: PersonSource[];
+  dialogOrder?: number;
   avatarUrl?: string;
 }
 export interface Group {
