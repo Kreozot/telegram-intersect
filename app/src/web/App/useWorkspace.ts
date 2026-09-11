@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AppStatus, Snapshot, TelegramStatus } from "../../shared/contracts.js";
 import { limitSelection, toggleSelection } from "../../shared/selection.js";
-import { api } from "../api/client.js";
+import { ApiError, api } from "../api/client.js";
 import { demoSnapshot } from "../demo.js";
+import { shouldPollWorkspace } from "./workspace-refresh.js";
 
 /** Coordinates workspace API state and explicit demo mode for the root application. */
 export function useWorkspace() {
@@ -22,42 +23,87 @@ export function useWorkspace() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  /** Refreshes only normalized metadata; polling never asks Telegram for message history. */
-  const refresh = useCallback(async () => {
+  const pollingRequired = shouldPollWorkspace(authenticated, telegram.stage, snapshot.scan);
+  /** Clears protected browser state after locking, expiry, or an unauthorized API response. */
+  const clearWorkspace = useCallback(() => {
+    setAuthenticated(false);
+    setSnapshot({ people: [], scan: null });
+    setTelegram({ stage: "idle", qr: null, error: null, configured: false });
+  }, []);
+
+  /** Refreshes normalized workspace data and converts an expired session into the locked UI state. */
+  const refreshWorkspace = useCallback(async () => {
+    try {
+      const [state, data] = await Promise.all([
+        api<TelegramStatus>("telegram"),
+        api<Snapshot>("snapshot"),
+      ]);
+      setTelegram(state);
+      setSnapshot(data);
+    } catch (failure) {
+      if (failure instanceof ApiError && failure.status === 401) {
+        clearWorkspace();
+        return;
+      }
+      throw failure;
+    }
+  }, [clearWorkspace]);
+
+  /** Checks the browser session at startup, then loads protected data only when it is unlocked. */
+  const initializeWorkspace = useCallback(async () => {
     const access = await api<AppStatus>("access");
     setAuthenticated(access.authenticated);
     setMaxSelectedPeople(access.maxSelectedPeople);
-    if (!access.authenticated) {
-      setSnapshot({ people: [], scan: null });
-      setTelegram({ stage: "idle", qr: null, error: null, configured: false });
-      return;
-    }
-    const [state, data] = await Promise.all([
-      api<TelegramStatus>("telegram"),
-      api<Snapshot>("snapshot"),
-    ]);
-    setTelegram(state);
-    setSnapshot(data);
-  }, []);
+    if (access.authenticated) await refreshWorkspace();
+    else clearWorkspace();
+  }, [clearWorkspace, refreshWorkspace]);
+
   useEffect(() => {
     if (demo) return;
+    /** Loads access and workspace state once when the real workspace is opened. */
+    async function initialize(): Promise<void> {
+      try {
+        await initializeWorkspace();
+      } catch (failure) {
+        setError(failure instanceof Error ? failure.message : "Connection failed.");
+      }
+    }
+    void initialize();
+  }, [demo, initializeWorkspace]);
+
+  useEffect(() => {
+    if (demo || !pollingRequired) return;
     let disposed = false;
     let timer: ReturnType<typeof setTimeout>;
-    /** Polls serially so slow responses cannot create an unbounded request queue. */
+    /** Polls after each prior refresh settles so slow responses never overlap. */
     async function poll(): Promise<void> {
       try {
-        await refresh();
+        await refreshWorkspace();
       } catch (failure) {
         if (!disposed) setError(failure instanceof Error ? failure.message : "Connection failed.");
       }
       if (!disposed) timer = setTimeout(poll, 1800);
     }
-    void poll();
+    timer = setTimeout(poll, 1800);
     return () => {
       disposed = true;
       clearTimeout(timer);
     };
-  }, [demo, refresh]);
+  }, [demo, pollingRequired, refreshWorkspace]);
+
+  useEffect(() => {
+    if (demo) return;
+    /** Refreshes once when the page becomes visible after browser suspension or tab switching. */
+    function refreshWhenVisible(): void {
+      if (document.visibilityState !== "visible") return;
+      const refresh = authenticated ? refreshWorkspace : initializeWorkspace;
+      void refresh().catch((failure: unknown) => {
+        setError(failure instanceof Error ? failure.message : "Connection failed.");
+      });
+    }
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => document.removeEventListener("visibilitychange", refreshWhenVisible);
+  }, [authenticated, demo, initializeWorkspace, refreshWorkspace]);
   useEffect(() => {
     if (demo || !authenticated || telegram.stage !== "authorized" || selected.size === 0) return;
     const ids = [...selected];
@@ -66,23 +112,33 @@ export function useWorkspace() {
       async function enqueueSelection(): Promise<void> {
         try {
           await api("scans", "POST", { ids });
-          await refresh();
+          await refreshWorkspace();
         } catch (failure) {
+          if (failure instanceof ApiError && failure.status === 401) clearWorkspace();
           setError(failure instanceof Error ? failure.message : "Scan could not be queued.");
         }
       }
       void enqueueSelection();
     }, 250);
     return () => clearTimeout(timer);
-  }, [authenticated, demo, refresh, selected, telegram.stage]);
+  }, [authenticated, clearWorkspace, demo, refreshWorkspace, selected, telegram.stage]);
   /** Executes a user command and refreshes its outcome while presenting recoverable failures. */
   async function command(path: string, body?: unknown, method = "POST"): Promise<void> {
     setBusy(true);
     setError(null);
     try {
-      await api(path, method, body);
-      await refresh();
+      const result = await api<unknown>(path, method, body);
+      if (path === "access") {
+        const access = result as AppStatus;
+        setAuthenticated(access.authenticated);
+        setMaxSelectedPeople(access.maxSelectedPeople);
+        if (access.authenticated) await refreshWorkspace();
+        else clearWorkspace();
+      } else {
+        await refreshWorkspace();
+      }
     } catch (failure) {
+      if (failure instanceof ApiError && failure.status === 401) clearWorkspace();
       setError(failure instanceof Error ? failure.message : "Request failed.");
     } finally {
       setBusy(false);

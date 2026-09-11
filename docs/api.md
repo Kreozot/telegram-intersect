@@ -25,7 +25,7 @@ All URLs are relative to the single UI/API origin. JSON request bodies are schem
 
 The current catalog can change after a completed scan. A completed snapshot's person IDs may therefore include identities no longer in the current catalog. Each scan has per-person status, groups, and observation times. Only completed means that API pagination for that person finished; it does not guarantee universal membership visibility.
 
-The browser polls /api/telegram and /api/snapshot serially with a 1.8-second interval. Catalog discovery stays within the POST request and preserves old data if it fails. Selection changes are debounced for 250 ms before posting the selected IDs. The endpoint reuses completed observations and may safely append newly selected people while the sequential worker is active.
+While login or scanning is active, the browser polls /api/telegram and /api/snapshot with a 1.8-second interval. Idle workspaces do not poll. Commands and returning to a visible tab trigger one refresh. The browser checks /api/access when it first opens or is locked; authenticated workspace requests use HTTP 401 to detect later session expiry. Catalog discovery stays within the POST request and preserves old data if it fails. Selection changes are debounced for 250 ms before posting the selected IDs. The endpoint reuses completed observations and may safely append newly selected people while the sequential worker is active.
 
 ## JavaScript (inside the unlocked same-origin UI)
 

@@ -29,7 +29,9 @@ No Telegram credential or access hash enters browser contracts. Components priva
 4. Browser selection changes asynchronously enqueue newly selected people after a short debounce.
    ScanService expands the current durable queue, reuses completed observations, and queries common
    groups sequentially through the metadata gateway while saving each page checkpoint.
-5. The browser polls normalized snapshots and derives selected-person counts and graph edges locally.
+5. The browser polls normalized login and snapshot state only while login or scanning is active. User
+   commands and tab visibility restoration trigger one refresh; idle workspaces do not poll. The
+   browser derives selected-person counts and graph edges locally.
 
 Development uses Vite middleware and HMR on the application HTTP server. Production serves the built static UI and API from one port. Scan jobs run independently of HTTP request lifetimes; catalog discovery currently stays within its initiating request.
 

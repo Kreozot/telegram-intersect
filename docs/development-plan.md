@@ -16,6 +16,7 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 - [x] Enforce a configurable simultaneous people-selection limit, defaulting to 50.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
 - [x] Add recent-activity and A–Z people sorting with an independent selected-first option.
+- [x] Limit browser polling to active login and scan work, with command and tab-return refreshes.
 - [x] Add Pinokio runtime/install/start/update/dependency-reset scripts.
 - [x] Add README setup, configuration, launch, debug, hosting, and Pinokio instructions.
 - [x] Build and start the production application locally.

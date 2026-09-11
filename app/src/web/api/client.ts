@@ -1,3 +1,15 @@
+/** Describes an unsuccessful application API response while preserving its HTTP status for control flow. */
+export class ApiError extends Error {
+  /** Creates a safe browser error without retaining the rejected request body. */
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 /** Sends protected same-origin requests; never persists keys or Telegram login inputs in browser storage. */
 export async function api<T>(path: string, method = "GET", body?: unknown): Promise<T> {
   const response = await fetch(`/api/${path}`, {
@@ -8,10 +20,11 @@ export async function api<T>(path: string, method = "GET", body?: unknown): Prom
   });
   const data: unknown = await response.json();
   if (!response.ok)
-    throw new Error(
+    throw new ApiError(
       typeof data === "object" && data !== null && "error" in data
         ? String(data.error)
         : "Request failed.",
+      response.status,
     );
   return data as T;
 }
