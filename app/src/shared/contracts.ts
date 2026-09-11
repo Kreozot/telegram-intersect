@@ -54,6 +54,7 @@ export interface GraphNode {
   label: string;
   kind: "person" | "group";
   count: number;
+  avatarUrl?: string;
 }
 export interface GraphEdge {
   id: string;

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import cytoscape from "cytoscape";
 import { separateNodes } from "../src/web/App/Explorer/GraphCanvas/separate-nodes.js";
 
-test("separates overlapping person cards and group nodes without changing connections", () => {
+test("separates overlapping person avatars and group nodes without changing connections", () => {
   const cy = cytoscape({
     headless: true,
     styleEnabled: true,

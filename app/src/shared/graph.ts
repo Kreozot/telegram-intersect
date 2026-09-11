@@ -18,6 +18,7 @@ export function buildGraph(
       label: person.name,
       kind: "person",
       count: unique.size,
+      ...(person.avatarUrl ? { avatarUrl: person.avatarUrl } : {}),
     });
     for (const group of unique.values()) {
       const current = groups.get(group.id);
@@ -42,11 +43,13 @@ export function mergePeople(people: readonly Person[]): Person[] {
   const merged = new Map<string, Person>();
   for (const person of people) {
     const old = merged.get(person.id);
+    const avatarUrl = person.avatarUrl ?? old?.avatarUrl;
     merged.set(person.id, {
       id: person.id,
       name: person.name,
       username: person.username,
       sources: [...new Set([...(old?.sources ?? []), ...person.sources])],
+      ...(avatarUrl ? { avatarUrl } : {}),
     });
   }
   return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));

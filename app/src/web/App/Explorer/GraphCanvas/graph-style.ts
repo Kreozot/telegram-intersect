@@ -28,7 +28,29 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
     },
     {
       selector: 'node[kind = "person"]',
-      style: { color: "#102134", "font-weight": 600 },
+      style: {
+        shape: "ellipse",
+        width: 64,
+        height: 64,
+        color: text,
+        "font-weight": 600,
+        "text-valign": "bottom",
+        "text-margin-y": 16,
+        "text-wrap": "none",
+        "text-background-color": panel,
+        "text-background-opacity": 0.7,
+        "text-background-shape": "roundrectangle",
+        "text-background-padding": "6px",
+        "background-color": "#829dc6",
+        "background-fit": "cover",
+        "background-clip": "node",
+      },
+    },
+    {
+      selector: 'node[kind = "person"][avatarUrl]',
+      style: {
+        "background-image": "data(avatarUrl)",
+      },
     },
     {
       selector: 'node[kind = "group"]',
