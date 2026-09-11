@@ -2,16 +2,29 @@ import { Button, Progress } from "@mantine/core";
 import type { GraphData, Scan } from "../../../shared/contracts.js";
 import styles from "./Explorer.module.css";
 import { GraphCanvas } from "./GraphCanvas/GraphCanvas.js";
+import { GraphFilter } from "./GraphFilter/GraphFilter.js";
 
 interface Props {
   graph: GraphData;
+  visibleGraph: GraphData;
+  intersectionsOnly: boolean;
+  onIntersectionsChange: (enabled: boolean) => void;
   focus: string | null;
   onFocus: (id: string | null) => void;
   demo: boolean;
   scan: Scan | null;
 }
 /** Frames the graph with coverage metrics and scan progress rather than claiming complete membership knowledge. */
-export function Explorer({ graph, focus, onFocus, demo, scan }: Props) {
+export function Explorer({
+  graph,
+  visibleGraph,
+  intersectionsOnly,
+  onIntersectionsChange,
+  focus,
+  onFocus,
+  demo,
+  scan,
+}: Props) {
   const people = graph.nodes.filter((node) => node.kind === "person").length;
   const groups = graph.nodes.length - people;
   const selectedResults = graph.nodes
@@ -76,13 +89,26 @@ export function Explorer({ graph, focus, onFocus, demo, scan }: Props) {
           />
         </div>
       )}
+      <GraphFilter
+        enabled={intersectionsOnly}
+        disabled={people < 2}
+        visible={visibleGraph.nodes.length - people}
+        total={groups}
+        onChange={onIntersectionsChange}
+      />
+      {groups > 0 && visibleGraph.nodes.length === people && (
+        <p className={styles.scanHint}>
+          No observed groups connect two selected people. Turn off Only intersections to see all
+          groups.
+        </p>
+      )}
       <div className={styles.canvas}>
-        <GraphCanvas graph={graph} focus={focus} onFocus={onFocus} />
+        <GraphCanvas graph={visibleGraph} focus={focus} onFocus={onFocus} />
         <div className={styles.legend}>
           <span className={styles.personDot} />
           People
           <span className={styles.groupDot} />
-          Communities
+          Communities · number = selected people
         </div>
         {!people && (
           <div className={styles.empty}>
@@ -97,7 +123,7 @@ export function Explorer({ graph, focus, onFocus, demo, scan }: Props) {
         )}
       </div>
       <div className={styles.caption}>
-        <span>Drag to explore · Scroll to zoom · Select a node for details</span>
+        <span>Hover for names · Select for connections · Scroll to zoom</span>
         {focus && (
           <Button size="compact-xs" variant="subtle" onClick={() => onFocus(null)}>
             Clear focus

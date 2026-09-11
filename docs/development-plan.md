@@ -20,7 +20,7 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 
 ## Verification and release gates
 
-- [x] Complete lint/type/test/build verification (nine synthetic tests pass).
+- [x] Complete lint/type/test/build verification.
 - [x] Owner confirmed QR login with two-step verification and contact loading.
 - [ ] Verify phone/code login with the owner's actual Telegram account.
 - [ ] Verify live Telegram contacts, archived dialogs, pagination, migrations, and flood-wait behavior.
@@ -32,6 +32,8 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 Initial synthetic tests cover privacy normalization, method blocking, encryption, browser access, graph deduplication/counts, multipage scans, flood-wait cancellation/resume, and launcher URL capture. No real Telegram messages or contacts have been used for development or tests.
 
 ## Known scope and limitations
+
+Dense-map readability: replaced always-visible community titles with compact count markers and hover/selection names, emphasized people, added a default optional intersection filter, and separated residual node collisions after CoSE. Browser verification uses a synthetic 3-person, 135-community, 187-edge fixture in both filtered and complete views. Automated tests cover filter integrity and collision separation; arbitrary large datasets remain unbenchmarked.
 
 An owner-reported zero-community result was traced to an imported catalog with no scan record. Catalog import and selection do not run group discovery. The explorer now shows an unknown count until observations establish a value, explains the explicit Build community map action, and identifies unscanned people in their details. Zero is shown for an empty selection result only after all selected people have completed scanning.
 

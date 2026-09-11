@@ -57,5 +57,5 @@ Telegram session strings are encrypted with AES-256-GCM. The key is provided by 
 - Real-account login, migration, and large-catalog pagination still need interactive verification.
 - Email/CAPTCHA/account registration auth flows are unsupported.
 - Catalog import is not a durable resumable job; retry preserves the prior catalog.
-- Initial graph layout uses Cytoscape COSE. Large maps need measured performance limits or an alternative layout policy.
+- Graph layout uses Cytoscape CoSE followed by a bounded body-collision separation pass. People use named cards; groups use compact count markers with names on hover/selection. For multi-person selections, an explicit default intersection filter retains groups observed for at least two selected people. The canvas and details list use the same filtered graph; top-level metrics retain full scan counts. Single-person selections show all their groups. Filtering never changes stored data. Large maps still need broader performance limits.
 - Multi-user service, scheduled refresh, group participant import, exports, and group–group projections remain outside initial scope.

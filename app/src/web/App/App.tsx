@@ -1,6 +1,7 @@
 import { Alert, Button } from "@mantine/core";
 import { useState } from "react";
 import { buildGraph } from "../../shared/graph.js";
+import { filterCommunities } from "../../shared/graph-filter.js";
 import { AccessPanel } from "./AccessPanel/AccessPanel.js";
 import styles from "./App.module.css";
 import { DetailsPanel } from "./DetailsPanel/DetailsPanel.js";
@@ -14,8 +15,10 @@ import { useWorkspace } from "./useWorkspace.js";
 export function App() {
   const workspace = useWorkspace();
   const [focus, setFocus] = useState<string | null>(null);
+  const [intersectionsOnly, setIntersectionsOnly] = useState(true);
   const [confirm, setConfirm] = useState<"logout" | "data" | null>(null);
   const graph = buildGraph(workspace.snapshot.people, workspace.snapshot.scan, workspace.selected);
+  const visibleGraph = filterCommunities(graph, intersectionsOnly);
   const connected = workspace.telegram.stage === "authorized";
   /** Performs the selected destructive user action after an explicit in-app confirmation. */
   async function confirmAction(): Promise<void> {
@@ -117,13 +120,19 @@ export function App() {
         </aside>
         <Explorer
           graph={graph}
+          visibleGraph={visibleGraph}
+          intersectionsOnly={intersectionsOnly}
+          onIntersectionsChange={(value) => {
+            setIntersectionsOnly(value);
+            setFocus(null);
+          }}
           focus={focus}
           onFocus={setFocus}
           demo={workspace.demo}
           scan={workspace.snapshot.scan}
         />
         <DetailsPanel
-          graph={graph}
+          graph={visibleGraph}
           focus={focus}
           onFocus={setFocus}
           scan={workspace.snapshot.scan}

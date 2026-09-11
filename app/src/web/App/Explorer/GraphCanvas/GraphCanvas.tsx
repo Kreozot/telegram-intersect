@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { GraphData } from "../../../../shared/contracts.js";
 import styles from "./GraphCanvas.module.css";
 import { graphStyles } from "./graph-style.js";
+import { separateNodes } from "./separate-nodes.js";
 
 interface Props {
   graph: GraphData;
@@ -31,15 +32,23 @@ export function GraphCanvas({ graph, focus, onFocus }: Props) {
         name: "cose",
         animate: false,
         randomize: false,
-        padding: 60,
-        nodeRepulsion: () => 9000,
-        idealEdgeLength: () => 95,
+        padding: 45,
+        nodeDimensionsIncludeLabels: true,
+        nodeRepulsion: (node) => (node.data("kind") === "person" ? 1200000 : 18000),
+        nodeOverlap: 40,
+        idealEdgeLength: () => 100,
+        gravity: 0.8,
+        numIter: 1500,
       },
-      minZoom: 0.2,
+      minZoom: 0.03,
       maxZoom: 3,
     });
+    separateNodes(cy);
+    cy.fit(undefined, 45);
     instance.current = cy;
     cy.on("tap", "node", (event) => onFocus(String(event.target.id())));
+    cy.on("mouseover", "node", (event) => event.target.addClass("hovered"));
+    cy.on("mouseout", "node", (event) => event.target.removeClass("hovered"));
     cy.on("tap", (event) => {
       if (event.target === cy) onFocus(null);
     });
@@ -60,11 +69,12 @@ export function GraphCanvas({ graph, focus, onFocus }: Props) {
   useEffect(() => {
     const cy = instance.current;
     if (!cy) return;
-    cy.elements().removeClass("dimmed highlighted");
+    cy.elements().removeClass("dimmed highlighted focused");
     if (focus && cy.getElementById(focus).length) {
       const active = cy.getElementById(focus).closedNeighborhood();
       cy.elements().not(active).addClass("dimmed");
       active.addClass("highlighted");
+      cy.getElementById(focus).addClass("focused");
     }
   }, [focus, serialized]);
   /** Fits the current network within the viewport after user pan or zoom. */
