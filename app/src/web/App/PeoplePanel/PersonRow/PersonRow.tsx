@@ -7,10 +7,18 @@ interface Props {
   checked: boolean;
   disabled: boolean;
   status: ScanStatus | null;
+  commonGroupCount: number | null;
   onToggle: (id: string) => void;
 }
-/** Displays one identity with a cached static avatar and initials as a resilient fallback. */
-export function PersonRow({ person, checked, disabled, status, onToggle }: Props) {
+/** Displays one identity, its cached avatar, and an available completed common-group count. */
+export function PersonRow({
+  person,
+  checked,
+  disabled,
+  status,
+  commonGroupCount,
+  onToggle,
+}: Props) {
   const initials = person.name
     .split(" ")
     .slice(0, 2)
@@ -36,11 +44,18 @@ export function PersonRow({ person, checked, disabled, status, onToggle }: Props
         <strong>{person.name}</strong>
         <small>{person.username ? `@${person.username}` : person.sources.join(" · ")}</small>
       </span>
-      {status && status !== "completed" && (
-        <span className={styles.state} title={status}>
-          {status}
-        </span>
-      )}
+      <span className={styles.trailing}>
+        {status && status !== "completed" && (
+          <span className={styles.state} title={status}>
+            {status}
+          </span>
+        )}
+        {commonGroupCount !== null && (
+          <span className={styles.commonGroupCount} title="Number of groups you have in common">
+            {commonGroupCount}
+          </span>
+        )}
+      </span>
     </label>
   );
 }

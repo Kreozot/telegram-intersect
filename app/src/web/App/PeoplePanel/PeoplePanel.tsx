@@ -121,16 +121,22 @@ export function PeoplePanel({
         </button>
       </div>
       <div className={styles.list}>
-        {filtered.map((person) => (
-          <PersonRow
-            key={person.id}
-            person={person}
-            checked={selected.has(person.id)}
-            disabled={!selected.has(person.id) && selected.size >= maxSelectedPeople}
-            status={scan?.people.find((entry) => entry.personId === person.id)?.status ?? null}
-            onToggle={onToggle}
-          />
-        ))}
+        {filtered.map((person) => {
+          const scanResult = scan?.people.find((entry) => entry.personId === person.id);
+          return (
+            <PersonRow
+              key={person.id}
+              person={person}
+              checked={selected.has(person.id)}
+              disabled={!selected.has(person.id) && selected.size >= maxSelectedPeople}
+              status={scanResult?.status ?? null}
+              commonGroupCount={
+                scanResult?.status === "completed" ? scanResult.groups.length : null
+              }
+              onToggle={onToggle}
+            />
+          );
+        })}
         {!filtered.length && (
           <p className={styles.empty}>
             {people.length

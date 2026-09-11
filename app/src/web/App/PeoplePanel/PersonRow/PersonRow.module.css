@@ -47,8 +47,12 @@
   font-size: 9px;
   color: var(--muted);
 }
-.state {
+.trailing {
   margin-left: auto;
+  flex-shrink: 0;
+}
+.state,
+.commonGroupCount {
   font-size: 8px;
   color: var(--muted);
 }
