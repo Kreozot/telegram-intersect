@@ -48,6 +48,8 @@ Each page is persisted atomically. Completed snapshots remain separate from in-p
 The current scan can expand while its worker is active. Selection removal is a browser graph concern:
 it neither deletes cached observations nor cancels a provider request already in progress. The worker
 remains sequential, including when a bulk selection appends many people.
+The server publishes and enforces the `MAX_SELECTED_PEOPLE` boundary; the browser applies the same
+limit to individual and bulk selection before enqueueing a scan.
 
 Catalog refresh commits only after full source discovery. Source flags are deduplicated and refreshed independently. Discovery, deletion, and scanning reject conflicting operations. A single process owns each database; horizontal scaling is outside this release.
 

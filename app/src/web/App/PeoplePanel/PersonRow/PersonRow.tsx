@@ -5,11 +5,12 @@ import styles from "./PersonRow.module.css";
 interface Props {
   person: Person;
   checked: boolean;
+  disabled: boolean;
   status: ScanStatus | null;
   onToggle: (id: string) => void;
 }
 /** Displays one identity with a cached static avatar and initials as a resilient fallback. */
-export function PersonRow({ person, checked, status, onToggle }: Props) {
+export function PersonRow({ person, checked, disabled, status, onToggle }: Props) {
   const initials = person.name
     .split(" ")
     .slice(0, 2)
@@ -25,6 +26,7 @@ export function PersonRow({ person, checked, status, onToggle }: Props) {
         aria-label={`Select ${person.name}`}
         size="xs"
         checked={checked}
+        disabled={disabled}
         onChange={() => onToggle(person.id)}
       />
       <span className={styles.avatar} aria-hidden="true">

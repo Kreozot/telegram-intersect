@@ -15,6 +15,7 @@ test("protects metadata, rejects cross-origin mutations and DNS rebinding, and e
     encryptionKey: Buffer.alloc(32),
     apiId: 0,
     apiHash: "",
+    maxSelectedPeople: 50,
   };
   registerAccess(app, config);
   app.get("/api/private", async () => ({ data: "private" }));

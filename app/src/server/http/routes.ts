@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { PersonSource } from "../../shared/contracts.js";
+import type { Config } from "../config.js";
 import { RequestError } from "../request-error.js";
 import type { ScanService } from "../scans/scan-service.js";
 import type { Repository } from "../storage/repository.js";
@@ -13,6 +14,7 @@ export function registerRoutes(
   telegram: TelegramService,
   scans: ScanService,
   metadata: MetadataService,
+  config: Config,
 ): void {
   app.get("/api/telegram", async () => telegram.state());
   app.post<{ Body: { mode: "phone" | "qr" } }>(
@@ -133,6 +135,10 @@ export function registerRoutes(
       if (telegram.state().stage !== "authorized")
         throw new RequestError("Sign in to Telegram first.");
       metadata.assertIdle();
+      if (new Set(request.body.ids).size > config.maxSelectedPeople)
+        throw new RequestError(
+          `Select no more than ${config.maxSelectedPeople} people at the same time.`,
+        );
       return scans.enqueue(request.body.ids);
     },
   );

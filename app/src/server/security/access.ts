@@ -48,6 +48,7 @@ export function registerAccess(app: FastifyInstance, config: Config): void {
   app.get("/api/health", async () => ({ ok: true }));
   app.get("/api/access", async (request) => ({
     authenticated: (sessions.get(token(request)) ?? 0) > Date.now(),
+    maxSelectedPeople: config.maxSelectedPeople,
   }));
   app.post<{ Body: { key: string } }>(
     "/api/access",
@@ -81,12 +82,12 @@ export function registerAccess(app: FastifyInstance, config: Config): void {
         "Set-Cookie",
         `intersect_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${config.origin ? "; Secure" : ""}`,
       );
-      return { authenticated: true };
+      return { authenticated: true, maxSelectedPeople: config.maxSelectedPeople };
     },
   );
   app.delete("/api/access", async (request, reply) => {
     sessions.delete(token(request));
     reply.header("Set-Cookie", "intersect_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0");
-    return { authenticated: false };
+    return { authenticated: false, maxSelectedPeople: config.maxSelectedPeople };
   });
 }

@@ -99,8 +99,9 @@ export function App() {
               scan={workspace.snapshot.scan}
               demo={workspace.demo}
               busy={workspace.busy}
+              maxSelectedPeople={workspace.maxSelectedPeople}
               onToggle={workspace.toggle}
-              onSelect={workspace.setSelected}
+              onSelect={workspace.select}
               onLoad={(source) => workspace.command("people", { source })}
               onCancel={() => workspace.command("scans/cancel")}
               onResume={() => workspace.command("scans/resume")}

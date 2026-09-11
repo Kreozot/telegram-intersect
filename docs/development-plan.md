@@ -13,6 +13,7 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 - [x] Add non-blocking static profile-avatar loading with authenticated local caching.
 - [x] Implement sequential common-group scans, pagination, flood waits, checkpoint persistence, cancellation, and restart/resume behavior.
 - [x] Trigger common-group scans from selection and allow the active durable queue to expand.
+- [x] Enforce a configurable simultaneous people-selection limit, defaulting to 50.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
 - [x] Add Pinokio runtime/install/start/update/dependency-reset scripts.
 - [x] Add README setup, configuration, launch, debug, hosting, and Pinokio instructions.

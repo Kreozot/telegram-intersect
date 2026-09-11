@@ -68,6 +68,7 @@ Values come from the process environment, then `app/.env`. Paths are resolved fr
 | TELEGRAM_API_ID / TELEGRAM_API_HASH | unset | Your Telegram client credentials |
 | HOST | 127.0.0.1 | Listening interface |
 | PORT | 4310 | UI/API port; 0 chooses an available port |
+| MAX_SELECTED_PEOPLE | 50 | Maximum number of people selected at the same time |
 | DATA_DIR | data | Private SQLite database and generated local keys |
 | APP_ACCESS_KEY | generated local key | Owner workspace access; at least 24 random characters |
 | SESSION_ENCRYPTION_KEY | generated local key | Exactly 64 hexadecimal characters for session encryption |
@@ -148,6 +149,7 @@ The owner has confirmed QR login with two-step verification and contact loading.
 - [Technology decisions](docs/decisions/0001-stack-proposal.md)
 - [Implementation and privacy decisions](docs/decisions/0002-implementation-and-privacy.md)
 - [Selection-triggered scan decision](docs/decisions/0004-selection-triggered-scans.md)
+- [Configurable selection-limit decision](docs/decisions/0005-selection-limit.md)
 - [Coding practices](docs/coding-practices.md)
 - [Code style](docs/code-style.md)
 - [Agent instructions](AGENTS.md)

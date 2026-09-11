@@ -11,6 +11,19 @@ export interface Config {
   encryptionKey: Buffer;
   apiId: number;
   apiHash: string;
+  maxSelectedPeople: number;
+}
+
+/** Parses a positive integer limit so invalid operator configuration fails at startup. */
+export function parsePositiveInteger(
+  value: string | undefined,
+  fallback: number,
+  name: string,
+): number {
+  const parsed = Number(value ?? fallback);
+  if (!Number.isSafeInteger(parsed) || parsed < 1)
+    throw new Error(`${name} must be a positive integer.`);
+  return parsed;
 }
 
 /** Loads a stable local secret without printing it; used only by server configuration. */
@@ -56,5 +69,10 @@ export function loadConfig(): Config {
     encryptionKey: Buffer.from(encryptionHex, "hex"),
     apiId,
     apiHash: process.env.TELEGRAM_API_HASH ?? "",
+    maxSelectedPeople: parsePositiveInteger(
+      process.env.MAX_SELECTED_PEOPLE,
+      50,
+      "MAX_SELECTED_PEOPLE",
+    ),
   };
 }

@@ -47,7 +47,7 @@ export interface TelegramStatus {
 }
 export interface AppStatus {
   authenticated: boolean;
-  telegram?: TelegramStatus;
+  maxSelectedPeople: number;
 }
 export interface GraphNode {
   id: string;

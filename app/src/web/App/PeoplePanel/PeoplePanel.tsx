@@ -1,6 +1,7 @@
 import { Button, Checkbox, TextInput } from "@mantine/core";
 import { useState } from "react";
 import type { Person, PersonSource, Scan } from "../../../shared/contracts.js";
+import { limitSelection } from "../../../shared/selection.js";
 import styles from "./PeoplePanel.module.css";
 import { PersonRow } from "./PersonRow/PersonRow.js";
 
@@ -10,6 +11,7 @@ interface Props {
   scan: Scan | null;
   demo: boolean;
   busy: boolean;
+  maxSelectedPeople: number;
   onToggle: (id: string) => void;
   onSelect: (ids: Set<string>) => void;
   onLoad: (source: PersonSource) => Promise<void>;
@@ -23,6 +25,7 @@ export function PeoplePanel({
   scan,
   demo,
   busy,
+  maxSelectedPeople,
   onToggle,
   onSelect,
   onLoad,
@@ -40,10 +43,17 @@ export function PeoplePanel({
   /** Selects or clears only currently visible people, leaving other filters' selections intact. */
   function selectVisible(): void {
     const next = new Set(selected);
-    for (const person of filtered) {
-      if (allSelected) next.delete(person.id);
-      else next.add(person.id);
+    if (!allSelected) {
+      onSelect(
+        limitSelection(
+          next,
+          filtered.map((item) => item.id),
+          maxSelectedPeople,
+        ),
+      );
+      return;
     }
+    for (const person of filtered) next.delete(person.id);
     onSelect(next);
   }
   return (
@@ -116,6 +126,7 @@ export function PeoplePanel({
             key={person.id}
             person={person}
             checked={selected.has(person.id)}
+            disabled={!selected.has(person.id) && selected.size >= maxSelectedPeople}
             status={scan?.people.find((entry) => entry.personId === person.id)?.status ?? null}
             onToggle={onToggle}
           />
@@ -130,7 +141,7 @@ export function PeoplePanel({
       </div>
       <div className={styles.bottom}>
         <div>
-          <strong>{selected.size}</strong> people selected
+          <strong>{selected.size}</strong> / {maxSelectedPeople} people selected
         </div>
         {scan?.running ? (
           <Button

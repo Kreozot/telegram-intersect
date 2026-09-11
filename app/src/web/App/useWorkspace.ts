@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { AppStatus, Snapshot, TelegramStatus } from "../../shared/contracts.js";
+import { limitSelection, toggleSelection } from "../../shared/selection.js";
 import { api } from "../api/client.js";
 import { demoSnapshot } from "../demo.js";
 
 /** Coordinates workspace API state and explicit demo mode for the root application. */
 export function useWorkspace() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [maxSelectedPeople, setMaxSelectedPeople] = useState(50);
   const [demo, setDemo] = useState(false);
   const [snapshot, setSnapshot] = useState<Snapshot>({
     people: [],
@@ -24,6 +26,7 @@ export function useWorkspace() {
   const refresh = useCallback(async () => {
     const access = await api<AppStatus>("access");
     setAuthenticated(access.authenticated);
+    setMaxSelectedPeople(access.maxSelectedPeople);
     if (!access.authenticated) {
       setSnapshot({ people: [], scan: null });
       setTelegram({ stage: "idle", qr: null, error: null, configured: false });
@@ -89,7 +92,13 @@ export function useWorkspace() {
   function showDemo(): void {
     const data = demoSnapshot();
     setDemo(true);
-    setSelected(new Set(data.people.map((person) => person.id)));
+    setSelected(
+      limitSelection(
+        new Set(),
+        data.people.map((person) => person.id),
+        maxSelectedPeople,
+      ),
+    );
     setError(null);
   }
   /** Leaves synthetic data and reloads the owner's actual workspace. */
@@ -99,12 +108,11 @@ export function useWorkspace() {
   }
   /** Toggles one person by stable identity while preserving independent source selections. */
   function toggle(id: string): void {
-    setSelected((old) => {
-      const next = new Set(old);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setSelected((old) => toggleSelection(old, id, maxSelectedPeople));
+  }
+  /** Applies bulk selection while preserving earlier choices up to the configured limit. */
+  function select(ids: Set<string>): void {
+    setSelected(limitSelection(new Set(), ids, maxSelectedPeople));
   }
   return {
     authenticated,
@@ -112,7 +120,8 @@ export function useWorkspace() {
     snapshot: demo ? demoSnapshot() : snapshot,
     telegram,
     selected,
-    setSelected,
+    select,
+    maxSelectedPeople,
     error,
     busy,
     command,

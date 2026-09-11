@@ -22,7 +22,7 @@ export function createApp(
     requestTimeout: 120_000,
   });
   registerAccess(app, config);
-  registerRoutes(app, repo, telegram, scans, metadata);
+  registerRoutes(app, repo, telegram, scans, metadata, config);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof RequestError) return reply.code(409).send({ error: error.message });
     if (error instanceof Error && "validation" in error)
