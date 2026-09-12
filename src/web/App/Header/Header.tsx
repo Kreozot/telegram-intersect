@@ -6,11 +6,12 @@ interface Props {
   demo: boolean;
   connected: boolean;
   authenticated: boolean;
+  accessMode: "local" | "key";
   onDemo: () => void;
   onLock: () => void;
 }
 /** Presents workspace identity, explicit demo state, and accessible theme/session actions. */
-export function Header({ demo, connected, authenticated, onDemo, onLock }: Props) {
+export function Header({ demo, connected, authenticated, accessMode, onDemo, onLock }: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   return (
     <header className={styles.header}>
@@ -41,7 +42,7 @@ export function Header({ demo, connected, authenticated, onDemo, onLock }: Props
         >
           {colorScheme === "dark" ? "Light" : "Dark"}
         </Button>
-        {authenticated && !demo && (
+        {authenticated && accessMode === "key" && !demo && (
           <Button size="xs" variant="subtle" onClick={onLock}>
             Lock
           </Button>

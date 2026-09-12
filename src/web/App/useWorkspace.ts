@@ -8,6 +8,7 @@ import { shouldPollWorkspace } from "./workspace-refresh.js";
 /** Coordinates workspace API state and explicit demo mode for the root application. */
 export function useWorkspace() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [accessMode, setAccessMode] = useState<AppStatus["accessMode"]>("key");
   const [maxSelectedPeople, setMaxSelectedPeople] = useState(50);
   const [demo, setDemo] = useState(false);
   const [snapshot, setSnapshot] = useState<Snapshot>({
@@ -53,6 +54,7 @@ export function useWorkspace() {
   const initializeWorkspace = useCallback(async () => {
     const access = await api<AppStatus>("access");
     setAuthenticated(access.authenticated);
+    setAccessMode(access.accessMode);
     setMaxSelectedPeople(access.maxSelectedPeople);
     if (access.authenticated) await refreshWorkspace();
     else clearWorkspace();
@@ -131,6 +133,7 @@ export function useWorkspace() {
       if (path === "access") {
         const access = result as AppStatus;
         setAuthenticated(access.authenticated);
+        setAccessMode(access.accessMode);
         setMaxSelectedPeople(access.maxSelectedPeople);
         if (access.authenticated) await refreshWorkspace();
         else clearWorkspace();
@@ -178,6 +181,7 @@ export function useWorkspace() {
   );
   return {
     authenticated,
+    accessMode,
     demo,
     snapshot: demo ? demoSnapshot() : snapshot,
     telegram,

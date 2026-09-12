@@ -35,6 +35,7 @@ export function App() {
           void workspace.command("access", undefined, "DELETE");
         }}
         authenticated={workspace.authenticated}
+        accessMode={workspace.accessMode}
       />
       {workspace.error && (
         <Alert

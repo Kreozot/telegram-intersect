@@ -45,4 +45,6 @@ discarding saved results or interrupting an in-flight request.
 - A person in contacts and dialogs appears once, with both source flags.
 - A cancelled or rate-limited scan retains observed edges and visibly marks incomplete coverage.
 - Selecting a group reveals its observed selected people; selecting a person highlights their shared groups.
-- Reload, logout, and data deletion have documented session/cache behavior; private data cannot be fetched without application authorization.
+- Reload, logout, and data deletion have documented session/cache behavior. Hosted private data
+  requires application authorization; loopback-only installations authorize the local owner
+  automatically while retaining host, origin, and mutation-request checks.

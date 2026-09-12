@@ -32,10 +32,6 @@
   margin-top: 15px;
 }
 
-.hintCode {
-  color: var(--text);
-}
-
 .divider {
   height: 1px;
   background: var(--line);

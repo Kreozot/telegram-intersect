@@ -62,7 +62,9 @@ async function main(): Promise<void> {
   const port = typeof address === "object" && address ? address.port : config.port;
   console.info(`Intersect ready at http://127.0.0.1:${port}`);
   console.info(
-    "Workspace key: read data/access-key locally, or use your configured APP_ACCESS_KEY.",
+    config.origin
+      ? "Workspace access requires the configured APP_ACCESS_KEY."
+      : "Local loopback access is authorized automatically.",
   );
   void telegram.restore();
   /** Closes scans and network connections before releasing persistence on termination. */

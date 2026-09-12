@@ -27,7 +27,7 @@ Select a community to focus its graph connections and see every selected person 
 - Light and dark themes, plus a clearly labeled synthetic demo requiring no account.
 - Sequential scans with pagination, Telegram flood waits, cancellation, checkpoints, and resume after a restart.
 - Local SQLite metadata storage and encrypted Telegram authorization sessions.
-- Owner access protection for both local and hosted installations.
+- Automatic owner access on loopback and access-key protection for hosted installations.
 
 ## Privacy: no conversation archive
 
@@ -53,14 +53,17 @@ npm start
 
 Open [http://127.0.0.1:4310](http://127.0.0.1:4310). One server serves both the UI and API. Without Telegram credentials you can immediately choose **Explore demo**.
 
-On first startup, local secrets are generated in `data/`. To unlock your workspace, open `data/access-key` locally and paste its value into the access-key field. The key is never printed by the server. Keep this directory accessible only to the owner; Windows permissions follow the parent directory's ACL.
+Local loopback access is authorized automatically, so opening the application on this computer does
+not require an access key. Host and origin checks still reject requests addressed through unrelated
+origins. Keep `data/` accessible only to the owner; Windows permissions follow the parent directory's
+ACL.
 
 ### Connect Telegram
 
 1. Create your own Telegram application at [my.telegram.org/apps](https://my.telegram.org/apps) to obtain `api_id` and `api_hash`. These are user-client credentials, not a bot token.
 2. Copy `.env.example` to `.env`.
 3. Fill in `TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, then restart the server.
-4. Unlock the workspace and sign in with QR or phone/code. For QR, use Telegram → Settings → Devices → Link Desktop Device.
+4. Sign in with QR or phone/code. For QR, use Telegram → Settings → Devices → Link Desktop Device.
 5. Load contacts, dialog identities, or both. Choose a source tab, search if needed, and use **Select visible** or individual checkboxes.
 6. Select people; their shared groups are checked asynchronously and the map grows as results arrive.
    Select a community or graph node to inspect connections.
@@ -82,11 +85,15 @@ Values come from the process environment, then `.env`. Paths are resolved from t
 | PORT | 4310 | UI/API port; 0 chooses an available port |
 | MAX_SELECTED_PEOPLE | 50 | Maximum number of people selected at the same time |
 | DATA_DIR | data | Private SQLite database and generated local keys |
-| APP_ACCESS_KEY | generated local key | Owner workspace access; at least 24 random characters |
+| APP_ACCESS_KEY | unset locally; required when hosted | Hosted owner access; at least 24 random characters |
 | SESSION_ENCRYPTION_KEY | generated local key | Exactly 64 hexadecimal characters for session encryption |
 | PUBLIC_ORIGIN | unset | Exact HTTPS origin for hosted mode, with no trailing slash |
 
-A restart requires unlocking the browser again. The encrypted Telegram session and scan checkpoints survive. **Lock** ends only the current browser session. **Disconnect Telegram** revokes this app's Telegram session and deletes local account data. **Clear local data** deletes analysis data while retaining Telegram authorization. Neither action deletes Telegram chats or contacts.
+Local browser access survives restarts without an unlock step. In hosted mode, browser sessions last
+12 hours, a restart invalidates them, and **Lock** ends the current session. The encrypted Telegram
+session and scan checkpoints survive either way. **Disconnect Telegram** revokes this app's Telegram
+session and deletes local account data. **Clear local data** deletes analysis data while retaining
+Telegram authorization. Neither action deletes Telegram chats or contacts.
 
 ## Development and debugging
 
@@ -118,7 +125,7 @@ and Stylelint configuration is in `stylelint.config.mjs`. Run `npm run lint:css`
 stylesheet check. Tests use Node's runner and synthetic Telegram objects; they require no account or
 network.
 
-For a port conflict, stop the other instance or change PORT. If saved authorization cannot be restored, check connectivity and the original SESSION_ENCRYPTION_KEY, or sign in again. Do not replace the encryption key while expecting existing encrypted sessions to remain readable. If catalog loading fails, existing data is preserved. A flood wait must expire before retrying. If a scan was interrupted, unlock and use **Resume unfinished scan**.
+For a port conflict, stop the other instance or change PORT. If saved authorization cannot be restored, check connectivity and the original SESSION_ENCRYPTION_KEY, or sign in again. Do not replace the encryption key while expecting existing encrypted sessions to remain readable. If catalog loading fails, existing data is preserved. A flood wait must expire before retrying. If a scan was interrupted, use **Resume unfinished scan**.
 
 ## Hosting on a server
 
@@ -132,7 +139,7 @@ Keep DATA_DIR and keys on private persistent storage. Stop the process before co
 
 ## API
 
-[API documentation](docs/api.md) includes endpoint semantics and JavaScript, Python, and curl examples. Use owner authorization and cookies; never embed access keys in URLs.
+[API documentation](docs/api.md) includes endpoint semantics and JavaScript, Python, and curl examples. Hosted clients use owner authorization and cookies; never embed access keys in URLs.
 
 ## Implementation and validation status
 

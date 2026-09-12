@@ -7,7 +7,7 @@ export interface Config {
   port: number;
   host: string;
   origin: string | null;
-  accessKey: string;
+  accessKey: string | null;
   encryptionKey: Buffer;
   apiId: number;
   apiHash: string;
@@ -50,9 +50,9 @@ export function loadConfig(): Config {
     throw new Error(
       "Remote binding requires PUBLIC_ORIGIN, APP_ACCESS_KEY and SESSION_ENCRYPTION_KEY.",
     );
-  const accessKey = process.env.APP_ACCESS_KEY ?? localSecret(dataDir, "access-key");
+  const accessKey = process.env.APP_ACCESS_KEY ?? null;
   const encryptionHex = process.env.SESSION_ENCRYPTION_KEY ?? localSecret(dataDir, "session-key");
-  if (accessKey.length < 24 || !/^[0-9a-f]{64}$/i.test(encryptionHex))
+  if ((accessKey !== null && accessKey.length < 24) || !/^[0-9a-f]{64}$/i.test(encryptionHex))
     throw new Error(
       "Use an access key of at least 24 characters and a 64-character hexadecimal encryption key.",
     );

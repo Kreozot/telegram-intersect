@@ -7,7 +7,7 @@ interface Props {
   onUnlock: (key: string) => Promise<void>;
   onDemo: () => void;
 }
-/** Collects the owner's local access key in memory and clears it immediately after submission. */
+/** Collects a hosted owner's access key in memory and clears it immediately after submission. */
 export function AccessPanel({ busy, onUnlock, onDemo }: Props) {
   const [key, setKey] = useState("");
   /** Submits the access key without saving it to browser storage or logs. */
@@ -46,8 +46,7 @@ export function AccessPanel({ busy, onUnlock, onDemo }: Props) {
         </Button>
       </form>
       <p className={styles.hint}>
-        On this computer, open <code className={styles.hintCode}>data/access-key</code>. For a
-        hosted workspace, use the key configured by its owner.
+        Use the access key configured by the owner of this hosted workspace.
       </p>
       <div className={styles.divider} />
       <h3 className={styles.demoHeading}>Just looking around?</h3>

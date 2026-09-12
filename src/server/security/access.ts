@@ -18,8 +18,9 @@ function token(request: FastifyRequest): string {
   );
 }
 
-/** Protects all API data and mutations with owner access, host validation, and same-origin requests. */
+/** Authorizes loopback owners or hosted sessions while enforcing host and request boundaries. */
 export function registerAccess(app: FastifyInstance, config: Config): void {
+  const accessMode = config.origin === null ? "local" : "key";
   const sessions = new Map<string, number>();
   let failedAttempts = 0;
   let retryAfter = 0;
@@ -41,13 +42,15 @@ export function registerAccess(app: FastifyInstance, config: Config): void {
       return reply.code(403).send({ error: "Missing request protection." });
     if (request.url === "/api/access" && request.method === "POST") return;
     if (request.url === "/api/health" || request.url === "/api/access") return;
+    if (accessMode === "local") return;
     const expires = sessions.get(token(request)) ?? 0;
     if (expires < Date.now())
       return reply.code(401).send({ error: "Unlock this workspace first." });
   });
   app.get("/api/health", async () => ({ ok: true }));
   app.get("/api/access", async (request) => ({
-    authenticated: (sessions.get(token(request)) ?? 0) > Date.now(),
+    authenticated: accessMode === "local" || (sessions.get(token(request)) ?? 0) > Date.now(),
+    accessMode,
     maxSelectedPeople: config.maxSelectedPeople,
   }));
   app.post<{ Body: { key: string } }>(
@@ -63,9 +66,14 @@ export function registerAccess(app: FastifyInstance, config: Config): void {
       },
     },
     async (request, reply) => {
+      if (accessMode === "local")
+        return { authenticated: true, accessMode, maxSelectedPeople: config.maxSelectedPeople };
       if (Date.now() < retryAfter)
         return reply.code(429).send({ error: "Too many attempts. Try again in one minute." });
-      if (!timingSafeEqual(digest(request.body.key), digest(config.accessKey))) {
+      if (
+        !config.accessKey ||
+        !timingSafeEqual(digest(request.body.key), digest(config.accessKey))
+      ) {
         failedAttempts += 1;
         if (failedAttempts >= 5) {
           retryAfter = Date.now() + 60_000;
@@ -82,12 +90,14 @@ export function registerAccess(app: FastifyInstance, config: Config): void {
         "Set-Cookie",
         `intersect_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200${config.origin ? "; Secure" : ""}`,
       );
-      return { authenticated: true, maxSelectedPeople: config.maxSelectedPeople };
+      return { authenticated: true, accessMode, maxSelectedPeople: config.maxSelectedPeople };
     },
   );
   app.delete("/api/access", async (request, reply) => {
+    if (accessMode === "local")
+      return { authenticated: true, accessMode, maxSelectedPeople: config.maxSelectedPeople };
     sessions.delete(token(request));
     reply.header("Set-Cookie", "intersect_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0");
-    return { authenticated: false, maxSelectedPeople: config.maxSelectedPeople };
+    return { authenticated: false, accessMode, maxSelectedPeople: config.maxSelectedPeople };
   });
 }

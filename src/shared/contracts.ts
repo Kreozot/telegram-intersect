@@ -48,6 +48,7 @@ export interface TelegramStatus {
 }
 export interface AppStatus {
   authenticated: boolean;
+  accessMode: "local" | "key";
   maxSelectedPeople: number;
 }
 export interface GraphNode {

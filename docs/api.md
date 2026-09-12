@@ -1,15 +1,18 @@
 # HTTP API
 
-All URLs are relative to the single UI/API origin. JSON request bodies are schema-validated. Except health/access checks and owner-key login, routes require the HttpOnly session cookie. Every non-GET/HEAD API request also requires X-Intersect-Request: 1. Browser requests must use the same origin. Do not put secrets into URLs.
+All URLs are relative to the single UI/API origin. JSON request bodies are schema-validated. Local
+loopback mode authorizes requests automatically. Hosted mode requires the HttpOnly session cookie
+except for health/access checks and owner-key login. Every non-GET/HEAD API request also requires
+`X-Intersect-Request: 1`. Browser requests must use the same origin. Do not put secrets into URLs.
 
 ## Endpoints
 
 | Method | Path | Meaning |
 | --- | --- | --- |
 | GET | /api/health | Public readiness response |
-| GET | /api/access | Whether this browser session is unlocked |
-| POST | /api/access | Unlock with { "key": "owner-key" } |
-| DELETE | /api/access | Lock this browser session |
+| GET | /api/access | Access status and `local` or `key` access mode |
+| POST | /api/access | Hosted mode: unlock with `{ "key": "owner-key" }` |
+| DELETE | /api/access | Hosted mode: lock this browser session |
 | GET | /api/telegram | Sanitized login stage and QR image, if applicable |
 | POST | /api/telegram/login | Begin { "mode": "qr" } or { "mode": "phone" } |
 | POST | /api/telegram/answer | Supply { "value": "current-challenge-answer" } |
@@ -25,7 +28,7 @@ All URLs are relative to the single UI/API origin. JSON request bodies are schem
 
 The current catalog can change after a completed scan. A completed snapshot's person IDs may therefore include identities no longer in the current catalog. Each scan has per-person status, groups, and observation times. Only completed means that API pagination for that person finished; it does not guarantee universal membership visibility.
 
-While login or scanning is active, the browser polls /api/telegram and /api/snapshot with a 1.8-second interval. Idle workspaces do not poll. Commands and returning to a visible tab trigger one refresh. The browser checks /api/access when it first opens or is locked; authenticated workspace requests use HTTP 401 to detect later session expiry. Catalog discovery stays within the POST request and preserves old data if it fails. Selection changes are debounced for 250 ms before posting the selected IDs. The endpoint reuses completed observations and may safely append newly selected people while the sequential worker is active.
+While login or scanning is active, the browser polls /api/telegram and /api/snapshot with a 1.8-second interval. Idle workspaces do not poll. Commands and returning to a visible tab trigger one refresh. The browser checks /api/access when it first opens; hosted authenticated workspace requests use HTTP 401 to detect later session expiry. Catalog discovery stays within the POST request and preserves old data if it fails. Selection changes are debounced for 250 ms before posting the selected IDs. The endpoint reuses completed observations and may safely append newly selected people while the sequential worker is active.
 
 ## JavaScript (inside the unlocked same-origin UI)
 
@@ -38,22 +41,17 @@ const snapshot = await response.json();
 ## Python (local owner script)
 
 ```python
-import getpass
-import http.cookiejar
 import json
 import urllib.request
 
 base = "http://127.0.0.1:4310"
-opener = urllib.request.build_opener(
-    urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
-)
 request = urllib.request.Request(
-    base + "/api/access",
-    data=json.dumps({"key": getpass.getpass("Workspace key: ")}).encode(),
+    base + "/api/scans",
+    data=json.dumps({"ids": ["user:123"]}).encode(),
     headers={"Content-Type": "application/json", "X-Intersect-Request": "1"},
     method="POST",
 )
-with opener.open(request) as response:
+with urllib.request.urlopen(request) as response:
     response.read()
 with opener.open(base + "/api/snapshot") as response:
     snapshot = json.load(response)
@@ -68,11 +66,12 @@ Public readiness does not require credentials:
 curl http://127.0.0.1:4310/api/health
 ```
 
-For protected API testing, feed an access JSON body on standard input to avoid storing the key in shell history. Protect the cookie jar and remove it after use:
+Local loopback API testing needs no access key:
 
 ```sh
-curl -c private-cookie-jar.txt -H "Content-Type: application/json" -H "X-Intersect-Request: 1" --data-binary @- http://127.0.0.1:4310/api/access
-curl -b private-cookie-jar.txt http://127.0.0.1:4310/api/snapshot
+curl http://127.0.0.1:4310/api/snapshot
 ```
 
-The first command waits for a JSON object containing key on stdin; terminate stdin using your shell's EOF action. Do not commit the jar or real API results. Use HTTPS for hosted API calls.
+Hosted API clients must first POST the owner key to `/api/access`, retain the returned cookie, and use
+HTTPS. Feed the JSON body on standard input to avoid storing the key in shell history. Protect the
+cookie jar, and do not commit it or real API results.

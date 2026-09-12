@@ -20,7 +20,8 @@ No Telegram credential or access hash enters browser contracts. Components priva
 
 ## Data flow
 
-1. The owner unlocks the browser using a local or configured workspace key.
+1. Loopback access recognizes the local owner automatically; hosted access requires the configured
+   workspace key.
 2. TelegramService restores authorization or handles an explicit existing-account login.
 3. MetadataService discovers contacts or dialog identities and normalizes them before persistence.
    Dialog discovery also retains each private dialog's ordinal catalog position for recent-activity
@@ -61,7 +62,11 @@ Catalog refresh commits only after full source discovery. Source flags are dedup
 
 ## Access, storage, and hosting
 
-The owner access key yields an opaque, 12-hour, in-memory browser session cookie. Process restart invalidates browser sessions, not Telegram authorization. Login is rate-limited; API mutations require a custom header and same-origin validation. Unknown errors are sanitized.
+Loopback mode authorizes requests automatically and does not create an access key or expose a Lock
+action. Host and origin validation plus a custom mutation header remain enforced. Hosted mode uses
+the owner access key to issue an opaque, 12-hour, in-memory browser session cookie. Process restart
+invalidates hosted browser sessions, not Telegram authorization. Key login is rate-limited and
+unknown errors are sanitized.
 
 Local mode defaults to loopback. Hosted mode requires an exact HTTPS origin and configured secrets; non-loopback startup fails without them. The reverse proxy preserves Host and terminates TLS.
 

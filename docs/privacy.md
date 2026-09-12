@@ -20,8 +20,8 @@ Do not interpret this exception as authorization to fetch message history, searc
 | Scan status, cursor, retry time, timestamps, safe error | SQLite | Progress, cancellation, recovery |
 | Telegram session authorization | AES-256-GCM encrypted in SQLite | Reconnect without repeated login |
 | Encryption key | Environment or separate local file | Decrypt session |
-| Workspace access key | Environment or separate local file | Authenticate owner browsers |
-| Browser session ID | Server memory and HttpOnly cookie for up to 12 hours | API access |
+| Workspace access key | Hosted environment only | Authenticate hosted owner browsers |
+| Browser session ID | Hosted server memory and HttpOnly cookie for up to 12 hours | Hosted API access |
 | Phone/code/2FA inputs | Transient challenge/request memory only | Complete explicit login |
 | Dialog top-message content | Transient response memory only; immediately dropped | Unavoidable Telegram response fields |
 | Dialog page cursor date/message ID/peer | Transient server memory only | Continue dialog-list pagination |
@@ -46,6 +46,9 @@ Tests inject sentinel message/phone values and assert that normalized and stored
 
 ## Deletion and backups
 
-Lock revokes the current browser session only. Clear local data removes catalogs, snapshots, and cached avatars while preserving Telegram authorization. Disconnect revokes the remote app session and clears all local account records, including avatars; other Telegram clients are unaffected.
+In hosted mode, Lock revokes the current browser session only. Loopback access is automatic and has
+no Lock action. Clear local data removes catalogs, snapshots, and cached avatars while preserving
+Telegram authorization. Disconnect revokes the remote app session and clears all local account
+records, including avatars; other Telegram clients are unaffected.
 
 SQLite secure_delete and VACUUM reduce remnants in the active database but cannot delete filesystem snapshots, SSD remapping copies, or independent backups. Keep the private data directory outside published artifacts and limit OS access. Stop the process for consistent backups, protect them, and apply a retention policy.
