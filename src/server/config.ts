@@ -26,6 +26,11 @@ export function parsePositiveInteger(
   return parsed;
 }
 
+/** Determines whether a listening interface requires hosted-mode credentials and HTTPS origin. */
+export function requiresHostedProtection(host: string, loopbackProxy: boolean): boolean {
+  return !loopbackProxy && !["127.0.0.1", "localhost", "::1"].includes(host);
+}
+
 /** Loads a stable local secret without printing it; used only by server configuration. */
 function localSecret(directory: string, name: string): string {
   const file = resolve(directory, name);
@@ -43,10 +48,13 @@ export function loadConfig(): Config {
   mkdirSync(dataDir, { recursive: true, mode: 0o700 });
   const host = process.env.HOST ?? "127.0.0.1";
   const origin = process.env.PUBLIC_ORIGIN ?? null;
-  const remote = !["127.0.0.1", "localhost", "::1"].includes(host);
+  const loopbackProxy = process.env.LOOPBACK_PROXY === "true";
   if (origin && (new URL(origin).origin !== origin || !origin.startsWith("https://")))
     throw new Error("PUBLIC_ORIGIN must be an HTTPS origin without a trailing slash.");
-  if (remote && (!origin || !process.env.APP_ACCESS_KEY || !process.env.SESSION_ENCRYPTION_KEY))
+  if (
+    requiresHostedProtection(host, loopbackProxy) &&
+    (!origin || !process.env.APP_ACCESS_KEY || !process.env.SESSION_ENCRYPTION_KEY)
+  )
     throw new Error(
       "Remote binding requires PUBLIC_ORIGIN, APP_ACCESS_KEY and SESSION_ENCRYPTION_KEY.",
     );

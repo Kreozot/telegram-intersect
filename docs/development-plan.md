@@ -23,6 +23,7 @@ Updated: 2026-09-12. Checkboxes describe verified outcomes, not merely intended 
 - [x] Build and start the production application locally.
 - [x] Verify synthetic graph/details and light/dark rendering in a browser.
 - [x] Verify development/debug startup and dialog-source bulk selection in the browser.
+- [x] Add a multi-stage Docker image and loopback-only Compose launch path with persistent data.
 
 ## Verification and release gates
 
@@ -32,6 +33,7 @@ Updated: 2026-09-12. Checkboxes describe verified outcomes, not merely intended 
 - [ ] Verify phone/code login with the owner's actual Telegram account.
 - [ ] Verify live Telegram contacts, archived dialogs, pagination, migrations, and flood-wait behavior.
 - [ ] Exercise hosted HTTPS setup behind a reverse proxy.
+- [ ] Exercise the Docker Compose launch path with a local Docker daemon.
 - [ ] Measure realistic graph layout performance and document a supported size range.
 - [ ] Choose a repository license and Git host destination before public distribution.
 

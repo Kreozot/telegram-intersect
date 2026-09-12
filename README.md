@@ -95,6 +95,29 @@ session and scan checkpoints survive either way. **Disconnect Telegram** revokes
 session and deletes local account data. **Clear local data** deletes analysis data while retaining
 Telegram authorization. Neither action deletes Telegram chats or contacts.
 
+## Run with Docker
+
+Docker Compose can build and run the production application without installing Node.js on the host:
+
+```sh
+docker compose up --build -d
+```
+
+Open [http://127.0.0.1:4310](http://127.0.0.1:4310). The application is published only on the host's
+loopback interface, and its private database and generated session key are kept in the
+`intersect-data` named volume. To connect Telegram, copy `.env.example` to `.env`, fill in
+`TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, and recreate the service. Set `INTERSECT_PORT` in `.env`
+to use a different host port.
+
+```sh
+docker compose down
+```
+
+This stops and removes the container but preserves the named volume. Do not add `--volumes` unless
+you intend to delete the local database, cached metadata, encrypted Telegram session, and generated
+session key. Do not change the Compose port binding from `127.0.0.1` to a public interface; use the
+protected hosted configuration below for remote access.
+
 ## Development and debugging
 
 ```sh
@@ -136,6 +159,11 @@ Set a long random APP_ACCESS_KEY, a persistent SESSION_ENCRYPTION_KEY, and PUBLI
 Browser cookies are HttpOnly and SameSite=Strict, with Secure in hosted mode. API mutations require the application's request header; request host/origin checks reject unrelated origins. No CORS access is enabled.
 
 Keep DATA_DIR and keys on private persistent storage. Stop the process before copying the database for backup; store backups securely and keep the encryption key separate from the database backup. Deleting local records does not erase old external backups. Full-disk encryption is recommended if metadata-at-rest confidentiality beyond filesystem permissions is needed; only Telegram session material is encrypted inside SQLite.
+
+The provided Compose file is intentionally a local-only convenience configuration. A containerized
+hosted deployment must remove `LOOPBACK_PROXY`, set `HOST=0.0.0.0`, provide `PUBLIC_ORIGIN`,
+`APP_ACCESS_KEY`, and `SESSION_ENCRYPTION_KEY`, and expose the application only to its HTTPS reverse
+proxy.
 
 ## API
 

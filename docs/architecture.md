@@ -70,6 +70,11 @@ unknown errors are sanitized.
 
 Local mode defaults to loopback. Hosted mode requires an exact HTTPS origin and configured secrets; non-loopback startup fails without them. The reverse proxy preserves Host and terminates TLS.
 
+The Docker Compose path binds the host-published port specifically to `127.0.0.1` while the process
+listens on the container interface. Its explicit `LOOPBACK_PROXY=true` setting treats that boundary
+as local mode. This exception is safe only with the supplied loopback-only port publication; hosted
+containers must disable it and use the normal hosted-mode secrets and HTTPS origin.
+
 Telegram session strings are encrypted with AES-256-GCM. The key is provided by the environment or stored outside SQLite in a local file. Filesystem permissions protect remaining metadata; Windows inherits the parent ACL. Disconnect revokes the Telegram session before local deletion. Analysis deletion retains authorization. Backup retention and full-disk encryption are operator responsibilities.
 
 ## Limits and follow-ups
