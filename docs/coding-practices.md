@@ -30,3 +30,7 @@ Use colocated CSS or SCSS, custom class names, and shared theme tokens. Prefer C
 ## Tests and changes
 
 Test observable behavior: union deduplication, ID safety, graph counts, incomplete scans, pagination, flood waits, recovery, session authorization, and deletion. Use synthetic Telegram adapter fixtures. Integration tests cover contracts and storage; browser tests cover sign-in states, selection, scan progress, themes, and graph/details interaction. Run type checking, Biome, relevant tests, and production build before declaring implementation complete. Record any live Telegram flow that remains unverified.
+
+Husky installs the repository's Git hooks during `npm install`. The pre-commit hook uses lint-staged
+to run Biome on supported staged source and configuration files, plus Stylelint on staged CSS files.
+These focused checks provide quick commit feedback and do not replace the full `npm run check` gate.
