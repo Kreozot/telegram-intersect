@@ -11,7 +11,7 @@
     "debug": "node --inspect=127.0.0.1:9229 --env-file-if-exists=.env --import tsx src/server/main.ts --dev",
     "build": "tsc --noEmit && vite build && tsc -p tsconfig.server.json",
     "start": "node --env-file-if-exists=.env dist/server/server/main.js",
-    "check": "biome check . ../biome.json && stylelint \"src/**/*.css\" && tsc --noEmit",
+    "check": "biome check . && stylelint \"src/**/*.css\" && tsc --noEmit",
     "format": "biome check --write . && stylelint \"src/**/*.css\" --fix",
     "lint:css": "stylelint \"src/**/*.css\"",
     "test": "node --import tsx --test tests/*.test.ts"

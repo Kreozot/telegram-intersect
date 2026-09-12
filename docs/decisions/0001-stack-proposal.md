@@ -3,6 +3,8 @@
 Status: ACCEPTED — owner approved the recommended stack and initial scope on 2026-09-10.
 Date: 2026-09-10.
 
+The Pinokio packaging portion of this decision was superseded by Decision 0008 on 2026-09-12.
+
 ## Already required by the owner
 
 TypeScript throughout; web UI plus server; free solutions; existing graph library; themed UI kit; custom colocated CSS/SCSS; Biome; English documentation and comments; SRP; detailed types and JSDoc.
@@ -19,7 +21,7 @@ TypeScript throughout; web UI plus server; free solutions; existing graph librar
 
 Recommended first-release tenancy: one owner and one Telegram account per deployment, including protected self-hosted use. A multi-user service changes authentication, isolation, and operations and needs a separate decision.
 
-The owner accepted these recommendations. During installation npm reported GramJS as archived; the owner explicitly approved replacing it with teleproto. The remaining stack is unchanged. Node.js 24, built-in SQLite, Fastify JSON schemas, npm, and Node's test runner implement the supporting infrastructure. Versions are pinned in app/package.json and app/package-lock.json.
+The owner accepted these recommendations. During installation npm reported GramJS as archived; the owner explicitly approved replacing it with teleproto. The remaining stack is unchanged. Node.js 24, built-in SQLite, Fastify JSON schemas, npm, and Node's test runner implement the supporting infrastructure. Versions are pinned in package.json and package-lock.json.
 
 ## Consequences
 

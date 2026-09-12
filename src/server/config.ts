@@ -37,7 +37,7 @@ function localSecret(directory: string, name: string): string {
   return readFileSync(file, "utf8").trim();
 }
 
-/** Validates startup settings and provisions owner-only local secrets for standalone or Pinokio startup. */
+/** Validates startup settings and provisions owner-only local secrets for application startup. */
 export function loadConfig(): Config {
   const dataDir = resolve(process.env.DATA_DIR ?? "data");
   mkdirSync(dataDir, { recursive: true, mode: 0o700 });

@@ -46,7 +46,7 @@ export function AccessPanel({ busy, onUnlock, onDemo }: Props) {
         </Button>
       </form>
       <p className={styles.hint}>
-        On this computer, open <code className={styles.hintCode}>app/data/access-key</code>. For a
+        On this computer, open <code className={styles.hintCode}>data/access-key</code>. For a
         hosted workspace, use the key configured by its owner.
       </p>
       <div className={styles.divider} />

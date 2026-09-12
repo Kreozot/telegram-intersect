@@ -17,8 +17,8 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
 - [x] Add recent-activity and A–Z people sorting with an independent selected-first option.
 - [x] Limit browser polling to active login and scan work, with command and tab-return refreshes.
-- [x] Add Pinokio runtime/install/start/update/dependency-reset scripts.
-- [x] Add README setup, configuration, launch, debug, hosting, and Pinokio instructions.
+- [x] Add README setup, configuration, launch, debug, and hosting instructions.
+- [x] Remove the discontinued Pinokio packaging and launcher integration.
 - [x] Build and start the production application locally.
 - [x] Verify synthetic graph/details and light/dark rendering in a browser.
 - [x] Verify development/debug startup and dialog-source bulk selection in the browser.
@@ -30,7 +30,6 @@ Updated: 2026-09-11. Checkboxes describe verified outcomes, not merely intended 
 - [x] Owner confirmed QR login with two-step verification and contact loading.
 - [ ] Verify phone/code login with the owner's actual Telegram account.
 - [ ] Verify live Telegram contacts, archived dialogs, pagination, migrations, and flood-wait behavior.
-- [ ] Exercise Pinokio install/start/update/reset on its running control plane.
 - [ ] Exercise hosted HTTPS setup behind a reverse proxy.
 - [ ] Measure realistic graph layout performance and document a supported size range.
 - [ ] Choose a repository license and Git host destination before public distribution.

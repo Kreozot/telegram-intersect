@@ -7,7 +7,7 @@ Read README.md, docs/requirements.md, docs/development-plan.md, docs/architectur
 ## Approval and decision tracking
 
 - Key technology choices require owner approval before application implementation or dependency installation. Present alternatives with concise tradeoffs.
-- The initial stack and single-owner scope were approved on 2026-09-10. Implementation and repository-local Pinokio launchers are authorized.
+- The initial stack and single-owner scope were approved on 2026-09-10. Implementation is authorized.
 - Record approved architectural decisions and their consequences in docs/decisions; update architecture and the development plan as work proceeds.
 - Do not silently expand the product scope or substitute a key dependency.
 

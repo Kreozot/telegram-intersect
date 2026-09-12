@@ -16,8 +16,8 @@ This file contains stylistic conventions. Design responsibilities and verificati
 - Write comments and JSDoc in English.
 
 biome.json records supported formatting and the recommended lint preset for the pinned Biome version.
-Stylelint applies its standard CSS rules from `app/stylelint.config.mjs`; `npm run lint:css`
+Stylelint applies its standard CSS rules from `stylelint.config.mjs`; `npm run lint:css`
 checks authored styles, and the main check and format commands include Stylelint. Generated output,
-private data, dependencies, and the Pinokio runtime are excluded. Naming, JSDoc completeness, SRP,
+private data, dependencies, and build output are excluded. Naming, JSDoc completeness, SRP,
 and component ownership also require review; automated linters do not enforce all of them.
 App-authored styles use CSS Modules; third-party component/canvas runtime styling is encapsulated.

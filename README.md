@@ -28,7 +28,6 @@ Select a community to focus its graph connections and see every selected person 
 - Sequential scans with pagination, Telegram flood waits, cancellation, checkpoints, and resume after a restart.
 - Local SQLite metadata storage and encrypted Telegram authorization sessions.
 - Owner access protection for both local and hosted installations.
-- Pinokio install, start, update, and dependency-reset launchers.
 
 ## Privacy: no conversation archive
 
@@ -47,7 +46,6 @@ Prerequisites: **Node.js 24.x** and npm. Node's built-in SQLite API is used; oth
 From this repository:
 
 ```sh
-cd app
 npm ci
 npm run build
 npm start
@@ -55,12 +53,12 @@ npm start
 
 Open [http://127.0.0.1:4310](http://127.0.0.1:4310). One server serves both the UI and API. Without Telegram credentials you can immediately choose **Explore demo**.
 
-On first startup, local secrets are generated in `app/data/`. To unlock your workspace, open `app/data/access-key` locally and paste its value into the access-key field. The key is never printed by the server. Keep this directory accessible only to the owner; Windows permissions follow the parent directory's ACL.
+On first startup, local secrets are generated in `data/`. To unlock your workspace, open `data/access-key` locally and paste its value into the access-key field. The key is never printed by the server. Keep this directory accessible only to the owner; Windows permissions follow the parent directory's ACL.
 
 ### Connect Telegram
 
 1. Create your own Telegram application at [my.telegram.org/apps](https://my.telegram.org/apps) to obtain `api_id` and `api_hash`. These are user-client credentials, not a bot token.
-2. Copy `app/.env.example` to `app/.env`.
+2. Copy `.env.example` to `.env`.
 3. Fill in `TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, then restart the server.
 4. Unlock the workspace and sign in with QR or phone/code. For QR, use Telegram → Settings → Devices → Link Desktop Device.
 5. Load contacts, dialog identities, or both. Choose a source tab, search if needed, and use **Select visible** or individual checkboxes.
@@ -75,7 +73,7 @@ SMS delivery is not guaranteed for third-party clients. Telegram may deliver a c
 
 ### Configuration
 
-Values come from the process environment, then `app/.env`. Paths are resolved from the `app/` working directory.
+Values come from the process environment, then `.env`. Paths are resolved from the repository root.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
@@ -93,7 +91,6 @@ A restart requires unlocking the browser again. The encrypted Telegram session a
 ## Development and debugging
 
 ```sh
-cd app
 npm ci
 npm run dev
 ```
@@ -104,7 +101,7 @@ Open the same port, normally 4310. Vite runs as middleware on the server port an
 npm run debug
 ```
 
-This starts development mode with the Node inspector bound to **127.0.0.1:9229**. Attach a Node debugger to port 9229; the repository includes a VS Code attach configuration. Set backend breakpoints under `app/src/server/`. For frontend breakpoints, use browser developer tools and the Vite source modules under `app/src/web/`.
+This starts development mode with the Node inspector bound to **127.0.0.1:9229**. Attach a Node debugger to port 9229; the repository includes a VS Code attach configuration. Set backend breakpoints under `src/server/`. For frontend breakpoints, use browser developer tools and the Vite source modules under `src/web/`.
 
 Do not expose the inspector port publicly. Do not enable raw Telegram/debug payload logging or inspect/share real message payloads. Reproduce bugs with the synthetic demo or test fixtures whenever possible.
 
@@ -117,26 +114,11 @@ npm run build
 ```
 
 Format supported source files with `npm run format`. Biome configuration is in the repository root,
-and Stylelint configuration is in `app/stylelint.config.mjs`. Run `npm run lint:css` for a focused
+and Stylelint configuration is in `stylelint.config.mjs`. Run `npm run lint:css` for a focused
 stylesheet check. Tests use Node's runner and synthetic Telegram objects; they require no account or
 network.
 
 For a port conflict, stop the other instance or change PORT. If saved authorization cannot be restored, check connectivity and the original SESSION_ENCRYPTION_KEY, or sign in again. Do not replace the encryption key while expecting existing encrypted sessions to remain readable. If catalog loading fails, existing data is preserved. A flood wait must expire before retrying. If a scan was interrupted, unlock and use **Resume unfinished scan**.
-
-## Pinokio
-
-This repository includes an app launcher at its root and application code in `app/`. No absolute local machine paths are embedded.
-
-1. Download the published repository URL through Pinokio, or place a development checkout under `PINOKIO_HOME/api/telegram-intersect`.
-2. Choose **Install**. The launcher provisions an isolated Node.js 24 Conda environment in `runtime/`, runs `npm ci`, and builds the app.
-3. Choose **Start**. The launcher selects a free port, binds loopback, captures the server's ready URL, and offers **Open Web UI**.
-4. Configure `app/.env` for Telegram and restart. Use the emitted HTTP URL in local mode; HTTPS proxy aliases need a matching hosted-origin configuration.
-5. **Update** fast-forwards the repository and reinstalls/builds dependencies. It requires a configured Git upstream and will not force through divergent history.
-6. **Reset dependencies (keeps data)** removes only `runtime/`, `app/node_modules/`, and `app/dist/`. It preserves `app/.env`, `app/data/`, and externally configured DATA_DIR. Use Pinokio's native stop action before resetting.
-
-For launcher failures, check `logs/api/` (including the latest log for install/start) and `logs/shell/`. Do not upload logs containing secrets. Node inspector debugging is available through the manual developer command above; the ordinary Pinokio launcher does not expose an inspector.
-
-To distribute the launcher, publish this repository to a Git host and use that repository URL in Pinokio. No repository has been pushed or registered in a Pinokio directory by this implementation. Choose a project license before public distribution. Pinokio lifecycle execution remains to be verified on a running Pinokio control plane; launcher syntax, URL capture, and menu states are tested locally.
 
 ## Hosting on a server
 
@@ -154,9 +136,9 @@ Keep DATA_DIR and keys on private persistent storage. Stop the process before co
 
 ## Implementation and validation status
 
-The application builds and runs locally. Automated checks cover identity deduplication, graph counts, privacy normalization, blocked Telegram operations, encryption, authorization boundaries, pagination, cancellation/recovery, and Pinokio launchers. Browser checks cover the synthetic graph, details, selection, and themes.
+The application builds and runs locally. Automated checks cover identity deduplication, graph counts, privacy normalization, blocked Telegram operations, encryption, authorization boundaries, pagination, and cancellation/recovery. Browser checks cover the synthetic graph, details, selection, and themes.
 
-The owner has confirmed QR login with two-step verification and contact loading. Phone/code login and live-account pagination remain unverified. Pinokio install/start and remote HTTPS deployment have **not** been exercised end-to-end. See [development plan](docs/development-plan.md) for remaining release checks.
+The owner has confirmed QR login with two-step verification and contact loading. Phone/code login, live-account pagination, and remote HTTPS deployment remain unverified. See [development plan](docs/development-plan.md) for remaining release checks.
 
 ## Project documentation
 

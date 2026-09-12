@@ -2,6 +2,9 @@
 
 Date: 2026-09-10. Status: implementation details under the approved stack.
 
+The Pinokio-specific packaging and verification details below were superseded by Decision 0008 on
+2026-09-12 and are retained only as historical context.
+
 Use Node.js 24, npm with an exact lockfile, the built-in node:sqlite driver, Node's test runner, and TypeScript via tsx for development. This avoids an ORM, external database driver, and separate test framework. Fastify JSON schemas validate request boundaries. Vite runs as development middleware on the application port; production serves its static output. The built-in SQLite API is still evolving, so the runtime major is constrained and storage is encapsulated.
 
 Use one owner access key with expiring in-memory browser sessions. Never log access keys. The local UI can read the generated key from a protected local file through owner action; hosted deployments provide it through environment configuration. Only loopback is enabled unless a public HTTPS origin is explicitly configured.

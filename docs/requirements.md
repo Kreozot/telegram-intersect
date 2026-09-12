@@ -31,7 +31,7 @@ The user-only [messages.getCommonChats](https://core.telegram.org/method/message
 
 An application needs its own [api_id and api_hash](https://core.telegram.org/api/obtaining_api_id). [Authorization](https://core.telegram.org/api/auth) supports several delivery mechanisms; an SMS code cannot be guaranteed for third-party clients. QR and phone/code with 2FA are implemented but still require live-account verification. Email setup, CAPTCHA, and registration flows are not implemented.
 
-The owner also requested Pinokio launchers and README run/debug instructions. The owner explicitly approved immediately discarding incidental top messages returned by dialog discovery, with no storage or browser transmission.
+The owner explicitly approved immediately discarding incidental top messages returned by dialog discovery, with no storage or browser transmission.
 
 Each person needs a distinct result status: not scanned, queued, scanning, completed, waiting, failed, or cancelled. Store scan timestamps and completeness. A failed or unfinished request must never mean zero shared groups. Counts describe selected people with observed memberships, not total group membership. Never infer a negative membership from missing partial results.
 

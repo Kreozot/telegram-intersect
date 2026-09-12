@@ -1,12 +1,12 @@
 # Architecture
 
-Status: implemented first version; live Telegram, Pinokio lifecycle, and remote hosting checks remain pending.
+Status: implemented first version; live Telegram and remote hosting checks remain pending.
 
 ## Approved stack and boundaries
 
-React, Vite, Mantine, CSS Modules, Cytoscape.js, Node.js 24, Fastify, and SQLite were approved by the owner. The owner subsequently approved replacing archived GramJS with teleproto. Exact dependency versions are recorded in app/package.json and app/package-lock.json.
+React, Vite, Mantine, CSS Modules, Cytoscape.js, Node.js 24, Fastify, and SQLite were approved by the owner. The owner subsequently approved replacing archived GramJS with teleproto. Exact dependency versions are recorded in package.json and package-lock.json.
 
-The root contains documentation and Pinokio launchers. The self-contained application package is under app/:
+The repository root contains the application package and project documentation:
 
 - src/web: browser UI, selection state, graph adapter, and private component subtrees.
 - src/shared: typed domain contracts and pure graph/identity transformations.
@@ -63,7 +63,7 @@ Catalog refresh commits only after full source discovery. Source flags are dedup
 
 The owner access key yields an opaque, 12-hour, in-memory browser session cookie. Process restart invalidates browser sessions, not Telegram authorization. Login is rate-limited; API mutations require a custom header and same-origin validation. Unknown errors are sanitized.
 
-Local mode defaults to loopback. Hosted mode requires an exact HTTPS origin and configured secrets; non-loopback startup fails without them. The reverse proxy preserves Host and terminates TLS. Pinokio uses a dedicated local Node runtime and a dynamic loopback port.
+Local mode defaults to loopback. Hosted mode requires an exact HTTPS origin and configured secrets; non-loopback startup fails without them. The reverse proxy preserves Host and terminates TLS.
 
 Telegram session strings are encrypted with AES-256-GCM. The key is provided by the environment or stored outside SQLite in a local file. Filesystem permissions protect remaining metadata; Windows inherits the parent ACL. Disconnect revokes the Telegram session before local deletion. Analysis deletion retains authorization. Backup retention and full-disk encryption are operator responsibilities.
 
