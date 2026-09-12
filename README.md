@@ -9,6 +9,9 @@ find the communities connecting them. In **Communities** mode, select previously
 channels to see which people connect those spaces. Contacts and Dialogs are independent, persistent
 sources, so the same map can focus on either catalog or their deduplicated union.
 
+**[Explore the public synthetic demo](https://kreozot.github.io/telegram-intersect/)** — no Telegram
+account or personal data required.
+
 The application analyzes only chats shared with your signed-in account. Counts describe observed
 memberships among the current selection, not complete community membership, and partial scans remain
 clearly distinguished from confirmed results.
@@ -125,6 +128,17 @@ This stops and removes the container but preserves the named volume. Do not add 
 you intend to delete the local database, cached metadata, encrypted Telegram session, and generated
 session key. Do not change the Compose port binding from `127.0.0.1` to a public interface; use the
 protected hosted configuration below for remote access.
+
+## Public synthetic demo
+
+The GitHub Pages workflow publishes a browser-only synthetic demo after every push to `main`. Enable
+it once in the GitHub repository under **Settings → Pages → Build and deployment → Source → GitHub
+Actions**. The project site is then available at
+[https://kreozot.github.io/telegram-intersect/](https://kreozot.github.io/telegram-intersect/).
+
+The published artifact contains no server, database, Telegram credentials, authorization session,
+or real contact data. It opens directly in demo mode and does not call the application API. To build
+the same static artifact locally, run `npm run build:demo`; its files are written to `dist/web`.
 
 ## Development and debugging
 

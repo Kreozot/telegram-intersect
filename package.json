@@ -10,6 +10,7 @@
     "dev": "node --env-file-if-exists=.env --import tsx src/server/main.ts --dev",
     "debug": "node --inspect=127.0.0.1:9229 --env-file-if-exists=.env --import tsx src/server/main.ts --dev",
     "build": "tsc --noEmit && vite build && tsc -p tsconfig.server.json",
+    "build:demo": "tsc --noEmit && vite build --mode demo",
     "start": "node --env-file-if-exists=.env dist/server/server/main.js",
     "check": "biome check . && stylelint \"src/**/*.css\" && tsc --noEmit",
     "format": "biome check --write . && stylelint \"src/**/*.css\" --fix",

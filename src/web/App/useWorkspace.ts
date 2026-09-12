@@ -5,12 +5,13 @@ import { ApiError, api } from "../api/client.js";
 import { demoSnapshot } from "../demo.js";
 import { shouldPollWorkspace } from "./workspace-refresh.js";
 
-/** Coordinates workspace API state and explicit demo mode for the root application. */
+/** Coordinates server-backed workspace state and the interactive or build-time demo modes. */
 export function useWorkspace() {
+  const demoOnly = import.meta.env.MODE === "demo";
   const [authenticated, setAuthenticated] = useState(false);
   const [accessMode, setAccessMode] = useState<AppStatus["accessMode"]>("key");
   const [maxSelectedPeople, setMaxSelectedPeople] = useState(50);
-  const [demo, setDemo] = useState(false);
+  const [demo, setDemo] = useState(demoOnly);
   const [snapshot, setSnapshot] = useState<Snapshot>({
     people: [],
     scan: null,
@@ -22,7 +23,10 @@ export function useWorkspace() {
     error: null,
     configured: false,
   });
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(() => {
+    if (!demoOnly) return new Set();
+    return new Set(demoSnapshot().people.map((person) => person.id));
+  });
   const [selectedCommunities, setSelectedCommunities] = useState<Set<string>>(new Set());
   const [enabledSources, setEnabledSources] = useState<Set<PersonSource>>(() => {
     try {
@@ -183,6 +187,7 @@ export function useWorkspace() {
   }
   /** Leaves synthetic data and reloads the owner's actual workspace. */
   function leaveDemo(): void {
+    if (demoOnly) return;
     setDemo(false);
     setSelected(new Set());
   }
@@ -213,6 +218,7 @@ export function useWorkspace() {
     authenticated,
     accessMode,
     demo,
+    demoOnly,
     snapshot: demo ? demoSnapshot() : snapshot,
     telegram,
     selected,

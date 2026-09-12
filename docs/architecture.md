@@ -39,6 +39,11 @@ No Telegram credential or access hash enters browser contracts. Components priva
 
 Development uses Vite middleware and HMR on the application HTTP server. Production serves the built static UI and API from one port. Scan jobs run independently of HTTP request lifetimes; catalog discovery currently stays within its initiating request.
 
+A separate Vite demo mode produces a static GitHub Pages artifact. It starts directly from synthetic
+browser data, uses relative asset URLs, skips workspace API initialization, and removes the action
+that would leave demo mode. The Pages workflow deploys only browser output; it never packages the
+server, private configuration, or persistent data.
+
 ## Privacy adapter
 
 PrivacyClient limits application RPCs to identity, common-group, connection configuration, and authentication operations. It wraps them in invokeWithoutUpdates. AuthorizationSession discards SDK entity-cache writes. MetadataUpdates disables background update initialization, catch-up, and dispatch while retaining transport keepalives. QR login polls tokens instead of enabling the SDK event stream.

@@ -4,6 +4,7 @@ import styles from "./Header.module.css";
 
 interface Props {
   demo: boolean;
+  demoOnly: boolean;
   connected: boolean;
   authenticated: boolean;
   accessMode: "local" | "key";
@@ -11,7 +12,15 @@ interface Props {
   onLock: () => void;
 }
 /** Presents workspace identity, explicit demo state, and accessible theme/session actions. */
-export function Header({ demo, connected, authenticated, accessMode, onDemo, onLock }: Props) {
+export function Header({
+  demo,
+  demoOnly,
+  connected,
+  authenticated,
+  accessMode,
+  onDemo,
+  onLock,
+}: Props) {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   return (
     <header className={styles.header}>
@@ -31,9 +40,11 @@ export function Header({ demo, connected, authenticated, accessMode, onDemo, onL
         <span className={styles.status}>
           {demo ? "DEMO DATA" : connected ? "TELEGRAM CONNECTED" : "LOCAL FIRST"}
         </span>
-        <Button size="xs" variant="subtle" onClick={onDemo}>
-          {demo ? "Exit demo" : "Explore demo"}
-        </Button>
+        {!demoOnly && (
+          <Button size="xs" variant="subtle" onClick={onDemo}>
+            {demo ? "Exit demo" : "Explore demo"}
+          </Button>
+        )}
         <Button
           size="xs"
           variant="default"

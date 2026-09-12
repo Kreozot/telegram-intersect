@@ -40,6 +40,7 @@ export function App() {
     <div className={styles.app}>
       <Header
         demo={workspace.demo}
+        demoOnly={workspace.demoOnly}
         connected={connected}
         onDemo={workspace.demo ? workspace.leaveDemo : workspace.showDemo}
         onLock={() => {

@@ -1,6 +1,6 @@
 # Development plan
 
-Updated: 2026-09-12. Checkboxes describe verified outcomes, not merely intended work.
+Updated: 2026-09-13. Checkboxes describe verified outcomes, not merely intended work.
 
 ## Completed implementation
 
@@ -28,6 +28,7 @@ Updated: 2026-09-12. Checkboxes describe verified outcomes, not merely intended 
 - [x] Verify synthetic graph/details and light/dark rendering in a browser.
 - [x] Verify development/debug startup and dialog-source bulk selection in the browser.
 - [x] Add a multi-stage Docker image and loopback-only Compose launch path with persistent data.
+- [x] Add a demo-only GitHub Pages build that deploys automatically after updates to `main`.
 
 ## Verification and release gates
 
