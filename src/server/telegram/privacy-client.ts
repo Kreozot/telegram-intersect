@@ -75,6 +75,39 @@ export class PrivacyClient extends TelegramClient {
       dcId,
     ) as Promise<Api.upload.TypeFile>;
   }
+  /** Downloads one bounded group thumbnail without exposing generic file access. */
+  downloadGroupThumbnail(
+    groupId: string,
+    accessHash: string | undefined,
+    photoId: string,
+    dcId: number,
+    limit: number,
+  ): Promise<Api.upload.TypeFile> {
+    const kind = groupId.startsWith("chat:") ? "chat" : "channel";
+    const rawId = groupId.slice(groupId.indexOf(":") + 1);
+    if (kind === "channel" && accessHash === undefined)
+      throw new Error("Channel photo locator is incomplete.");
+    const peer =
+      kind === "chat"
+        ? new Api.InputPeerChat({ chatId: bigInt(rawId) })
+        : new Api.InputPeerChannel({
+            channelId: bigInt(rawId),
+            accessHash: bigInt(accessHash ?? "0"),
+          });
+    const request = new Api.upload.GetFile({
+      location: new Api.InputPeerPhotoFileLocation({
+        peer,
+        photoId: bigInt(photoId),
+        big: false,
+      }),
+      offset: bigInt.zero,
+      limit,
+    });
+    return super.invoke(
+      new Api.InvokeWithoutUpdates({ query: request }),
+      dcId,
+    ) as Promise<Api.upload.TypeFile>;
+  }
   /** Checks authorization without the SDK's default update-state subscription, including during DC migration. */
   override async isUserAuthorized(): Promise<boolean> {
     try {

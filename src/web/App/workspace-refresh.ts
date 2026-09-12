@@ -13,6 +13,10 @@ export function shouldPollWorkspace(
   authenticated: boolean,
   loginStage: LoginStage,
   scan: Scan | null,
+  avatarLoading = false,
 ): boolean {
-  return authenticated && (ACTIVE_LOGIN_STAGES.has(loginStage) || scan?.running === true);
+  return (
+    authenticated &&
+    (ACTIVE_LOGIN_STAGES.has(loginStage) || scan?.running === true || avatarLoading)
+  );
 }

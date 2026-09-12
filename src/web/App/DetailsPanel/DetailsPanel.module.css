@@ -15,7 +15,7 @@
 .title {
   font-size: 19px;
   font-weight: 550;
-  margin: 20px 0 10px;
+  margin: 0;
   letter-spacing: -0.4px;
   overflow-wrap: anywhere;
 }
@@ -25,4 +25,19 @@
   font-size: 11px;
   line-height: 1.9;
   margin: 0 0 24px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 10px;
+}
+
+.communityAvatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
 }

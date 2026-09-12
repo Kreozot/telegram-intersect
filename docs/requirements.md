@@ -18,6 +18,8 @@
   cancellation, partial-result recovery, and refresh.
 - A configurable simultaneous people-selection limit, defaulting to 50.
 - Static profile avatars loaded in the background with local cache-first display and initials fallback.
+- Static community avatars loaded from observed common chats with the same private cache-first model,
+  shown in the community lens and revealed on graph-node hover.
 - A bipartite person–group graph, group counts, neighborhood highlighting, and a details panel. A group–group projection may follow: edge weight means the number of selected people observed in both groups.
 - Group selection filters the graph. Importing all participants of a selected group is a separate, unapproved feature whose completeness depends on API access.
 - Include archived private dialogs when available. Exclude bots, self, and deleted accounts from the default people selection; explain exclusions.

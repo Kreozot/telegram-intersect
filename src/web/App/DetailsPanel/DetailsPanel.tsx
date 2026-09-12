@@ -32,7 +32,12 @@ export function DetailsPanel({ className, graph, focus, onFocus, scan }: Props) 
   return (
     <aside className={`${styles.panel} ${className}`}>
       <span className={styles.eyebrow}>COMMUNITY LENS</span>
-      <h2 className={styles.title}>{node ? node.label : "Where paths cross"}</h2>
+      <div className={styles.heading}>
+        {node?.kind === "group" && node.avatarUrl && (
+          <img className={styles.communityAvatar} src={node.avatarUrl} alt="" />
+        )}
+        <h2 className={styles.title}>{node ? node.label : "Where paths cross"}</h2>
+      </div>
       <p className={styles.description}>{description}</p>
       {node ? (
         <FocusedNodeDetails

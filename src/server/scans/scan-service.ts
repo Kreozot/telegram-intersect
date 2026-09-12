@@ -74,9 +74,12 @@ export class ScanService {
           retryAt: null,
           observedAt: null,
         });
-      } else if (!this.active && result.status !== "completed") {
-        result.status = "queued";
-        result.error = null;
+      } else if (!this.active) {
+        if (result.status !== "completed" || this.repo.groupsNeedAvatarDiscovery(result.groups)) {
+          result.status = "queued";
+          result.cursor = "0";
+          result.error = null;
+        }
       }
     }
     if (this.active) {

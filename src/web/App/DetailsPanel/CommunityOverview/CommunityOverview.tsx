@@ -21,7 +21,13 @@ export function CommunityOverview({ groups, onFocus }: Props) {
             key={group.id}
             onClick={() => onFocus(group.id)}
           >
-            <span className={styles.symbol}>#</span>
+            <span className={styles.symbol} aria-hidden="true">
+              {group.avatarUrl ? (
+                <img className={styles.avatarImage} src={group.avatarUrl} alt="" />
+              ) : (
+                "#"
+              )}
+            </span>
             <span className={styles.itemLabel}>
               {group.label}
               <small className={styles.itemMeta}>

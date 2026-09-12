@@ -4,9 +4,19 @@ import type { PrivacyClient } from "./privacy-client.js";
 
 const MAX_AVATAR_BYTES = 512 * 1024;
 
+export interface StoredGroupPhoto {
+  id: string;
+  accessHash?: string;
+  photo: { id: string; dcId: number };
+}
+
+type PendingAvatar =
+  | { kind: "person"; person: StoredPerson }
+  | { kind: "group"; group: StoredGroupPhoto };
+
 /** Downloads and validates static profile thumbnails in a non-blocking, sequential queue. */
 export class AvatarService {
-  private pending = new Map<string, StoredPerson>();
+  private pending = new Map<string, PendingAvatar>();
   private running = false;
   private closed = false;
 
@@ -16,12 +26,27 @@ export class AvatarService {
     private readonly requireClient: () => PrivacyClient,
   ) {}
 
+  /** Reports whether background avatar work can still change a browser snapshot. */
+  isRunning(): boolean {
+    return this.running || this.pending.size > 0;
+  }
+
   /** Adds cache misses to the background queue without delaying catalog responses. */
   enqueue(people: readonly StoredPerson[]): void {
     if (this.closed) return;
     for (const person of people) {
       if (!person.photo || this.repo.avatar(person.id)?.photoId === person.photo.id) continue;
-      this.pending.set(person.id, person);
+      this.pending.set(person.id, { kind: "person", person });
+    }
+    if (!this.running) void this.drain();
+  }
+
+  /** Adds newly observed group-photo revisions to the same bounded sequential queue. */
+  enqueueGroups(groups: readonly StoredGroupPhoto[]): void {
+    if (this.closed) return;
+    for (const group of groups) {
+      if (this.repo.avatar(group.id)?.photoId === group.photo.id) continue;
+      this.pending.set(group.id, { kind: "group", group });
     }
     if (!this.running) void this.drain();
   }
@@ -37,15 +62,18 @@ export class AvatarService {
     this.running = true;
     try {
       while (!this.closed) {
-        const next = this.pending.entries().next().value as [string, StoredPerson] | undefined;
+        const next = this.pending.entries().next().value as [string, PendingAvatar] | undefined;
         if (!next) break;
-        const [personId, person] = next;
-        this.pending.delete(personId);
+        const [entityId, pending] = next;
+        this.pending.delete(entityId);
         try {
-          const avatar = await this.download(person);
+          const avatar = await this.download(pending);
           if (avatar && !this.closed) {
-            const current = this.repo.storedPeople().find((entry) => entry.id === person.id);
-            if (current?.photo?.id === avatar.photoId) this.repo.saveAvatar(avatar);
+            if (pending.kind === "group") this.repo.saveAvatar(avatar);
+            else {
+              const current = this.repo.storedPeople().find((entry) => entry.id === entityId);
+              if (current?.photo?.id === avatar.photoId) this.repo.saveAvatar(avatar);
+            }
           }
         } catch {
           // Avatar failures are intentionally isolated from catalog discovery and existing cache.
@@ -57,22 +85,42 @@ export class AvatarService {
   }
 
   /** Fetches the small profile-photo rendition and accepts only bounded static bitmap formats. */
-  private async download(person: StoredPerson): Promise<CachedAvatar | null> {
-    if (!person.photo) return null;
-    const response = await this.requireClient().downloadProfileThumbnail(
+  private async download(pending: PendingAvatar): Promise<CachedAvatar | null> {
+    const response =
+      pending.kind === "person"
+        ? await this.downloadPerson(pending.person)
+        : await this.requireClient().downloadGroupThumbnail(
+            pending.group.id,
+            pending.group.accessHash,
+            pending.group.photo.id,
+            pending.group.photo.dcId,
+            MAX_AVATAR_BYTES,
+          );
+    if (!(response instanceof Api.upload.File) || response.bytes.length >= MAX_AVATAR_BYTES)
+      return null;
+    const bytes = Buffer.from(response.bytes);
+    const contentType = detectStaticImage(bytes);
+    return contentType
+      ? {
+          entityId: pending.kind === "person" ? pending.person.id : pending.group.id,
+          photoId:
+            pending.kind === "person" ? (pending.person.photo?.id ?? "") : pending.group.photo.id,
+          contentType,
+          bytes,
+        }
+      : null;
+  }
+
+  /** Requests a person's small profile rendition using its server-only locator. */
+  private downloadPerson(person: StoredPerson): Promise<Api.upload.TypeFile> {
+    if (!person.photo) throw new Error("Person has no profile photo.");
+    return this.requireClient().downloadProfileThumbnail(
       person.id.slice(5),
       person.accessHash,
       person.photo.id,
       person.photo.dcId,
       MAX_AVATAR_BYTES,
     );
-    if (!(response instanceof Api.upload.File) || response.bytes.length >= MAX_AVATAR_BYTES)
-      return null;
-    const bytes = Buffer.from(response.bytes);
-    const contentType = detectStaticImage(bytes);
-    return contentType
-      ? { personId: person.id, photoId: person.photo.id, contentType, bytes }
-      : null;
   }
 }
 

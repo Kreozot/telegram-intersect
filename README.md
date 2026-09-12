@@ -23,6 +23,7 @@ Select a community to focus its graph connections and see every selected person 
 - Telegram QR or phone/code sign-in, including two-step verification.
 - Separate contact and dialog discovery, search, source filters, activity/A–Z sorting, and bulk selection.
 - Cache-first static profile avatars downloaded sequentially after catalog loading.
+- Cache-first community avatars shown in the community lens and revealed on graph hover.
 - Cytoscape graph with neighborhood highlighting, zoom, fit, community counts, and a keyboard-accessible details panel.
 - Light and dark themes, plus a clearly labeled synthetic demo requiring no account.
 - Sequential scans with pagination, Telegram flood waits, cancellation, checkpoints, and resume after a restart.

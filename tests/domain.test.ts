@@ -38,8 +38,8 @@ test("deduplicates identity sources and excludes unselected people from communit
       retryAt: null,
       observedAt: "",
       groups: [
-        { id: "chat:1", title: "X" },
-        { id: "chat:1", title: "X" },
+        { id: "chat:1", title: "X", avatarUrl: "/api/avatars/chat%3A1?v=4" },
+        { id: "chat:1", title: "X", avatarUrl: "/api/avatars/chat%3A1?v=4" },
       ],
     })),
   };
@@ -49,6 +49,10 @@ test("deduplicates identity sources and excludes unselected people from communit
   assert.equal(
     graph.nodes.find((node) => node.id === "user:1")?.avatarUrl,
     "/api/avatars/user%3A1?v=9",
+  );
+  assert.equal(
+    graph.nodes.find((node) => node.id === "chat:1")?.avatarUrl,
+    "/api/avatars/chat%3A1?v=4",
   );
 });
 

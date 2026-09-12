@@ -10,6 +10,7 @@ export interface Person {
 export interface Group {
   id: string;
   title: string;
+  avatarUrl?: string;
 }
 export type ScanStatus = "queued" | "scanning" | "waiting" | "completed" | "failed" | "cancelled";
 export interface PersonScan {
@@ -30,6 +31,7 @@ export interface Scan {
 export interface Snapshot {
   people: Person[];
   scan: Scan | null;
+  avatarLoading: boolean;
 }
 export type LoginStage =
   | "idle"

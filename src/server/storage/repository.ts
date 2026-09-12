@@ -13,7 +13,7 @@ export interface StoredProfilePhoto {
 }
 
 export interface CachedAvatar {
-  personId: string;
+  entityId: string;
   photoId: string;
   contentType: "image/jpeg" | "image/png" | "image/webp";
   bytes: Buffer;
@@ -29,12 +29,12 @@ export class Repository {
   ) {
     this.db = new DatabaseSync(path);
     const version = this.db.prepare("PRAGMA user_version").get();
-    if (Number(version?.user_version ?? 0) > 2) {
+    if (Number(version?.user_version ?? 0) > 4) {
       this.db.close();
       throw new Error("Database was created by a newer application version.");
     }
     this.db.exec(
-      "PRAGMA secure_delete=ON; CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS avatars (person_id TEXT PRIMARY KEY, photo_id TEXT NOT NULL, content_type TEXT NOT NULL, bytes BLOB NOT NULL); PRAGMA user_version=2;",
+      "PRAGMA secure_delete=ON; CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL); CREATE TABLE IF NOT EXISTS avatars (person_id TEXT PRIMARY KEY, photo_id TEXT NOT NULL, content_type TEXT NOT NULL, bytes BLOB NOT NULL); CREATE TABLE IF NOT EXISTS group_avatar_absences (group_id TEXT PRIMARY KEY); PRAGMA user_version=4;",
     );
   }
   /** Reads a typed internal record previously written by this repository. */
@@ -89,15 +89,15 @@ export class Repository {
     );
   }
   /** Reads one cached static avatar without exposing its Telegram file location. */
-  avatar(personId: string): CachedAvatar | null {
+  avatar(entityId: string): CachedAvatar | null {
     const row = this.db
       .prepare("SELECT person_id, photo_id, content_type, bytes FROM avatars WHERE person_id=?")
-      .get(personId);
+      .get(entityId);
     if (!row) return null;
     const contentType = String(row.content_type);
     if (!["image/jpeg", "image/png", "image/webp"].includes(contentType)) return null;
     return {
-      personId: String(row.person_id),
+      entityId: String(row.person_id),
       photoId: String(row.photo_id),
       contentType: contentType as CachedAvatar["contentType"],
       bytes: Buffer.from(row.bytes as Uint8Array),
@@ -109,20 +109,46 @@ export class Repository {
       .prepare(
         "INSERT INTO avatars VALUES (?,?,?,?) ON CONFLICT(person_id) DO UPDATE SET photo_id=excluded.photo_id, content_type=excluded.content_type, bytes=excluded.bytes",
       )
-      .run(avatar.personId, avatar.photoId, avatar.contentType, avatar.bytes);
+      .run(avatar.entityId, avatar.photoId, avatar.contentType, avatar.bytes);
+  }
+  /** Removes a cached image when Telegram explicitly reports that an entity has no photo. */
+  deleteAvatar(entityId: string): void {
+    this.db.prepare("DELETE FROM avatars WHERE person_id=?").run(entityId);
+  }
+  /** Records Telegram's explicit no-photo result so legacy scans are not refreshed repeatedly. */
+  markGroupWithoutAvatar(groupId: string): void {
+    this.db.prepare("INSERT OR IGNORE INTO group_avatar_absences VALUES (?)").run(groupId);
+    this.deleteAvatar(groupId);
+  }
+  /** Clears a prior no-photo marker when Telegram exposes a current group photo. */
+  markGroupWithAvatar(groupId: string): void {
+    this.db.prepare("DELETE FROM group_avatar_absences WHERE group_id=?").run(groupId);
+  }
+  /** Detects legacy group records whose photo availability has never been observed. */
+  groupsNeedAvatarDiscovery(groups: readonly { id: string; avatarUrl?: string }[]): boolean {
+    const absent = new Set(
+      this.db
+        .prepare("SELECT group_id FROM group_avatar_absences")
+        .all()
+        .map((row) => String(row.group_id)),
+    );
+    return groups.some((group) => !group.avatarUrl && !absent.has(group.id));
   }
   /** Drops cached avatars for identities or photos no longer present in the catalog. */
   pruneAvatars(people: readonly StoredPerson[]): void {
     const current = new Map(people.map((person) => [person.id, person.photo?.id]));
     for (const row of this.db.prepare("SELECT person_id, photo_id FROM avatars").all()) {
       const personId = String(row.person_id);
-      if (!current.has(personId) || current.get(personId) === undefined)
+      if (
+        personId.startsWith("user:") &&
+        (!current.has(personId) || current.get(personId) === undefined)
+      )
         this.db.prepare("DELETE FROM avatars WHERE person_id=?").run(personId);
     }
   }
   /** Reads the current job, including partial observations retained on cancellation. */
   scan(): Scan | null {
-    return this.read<Scan>("scan");
+    return this.withGroupAvatars(this.read<Scan>("scan"));
   }
   /** Saves only typed scan fields, excluding arbitrary provider data. */
   saveScan(scan: Scan): void {
@@ -146,7 +172,34 @@ export class Repository {
   }
   /** Retrieves the last fully completed snapshot independently of an interrupted refresh. */
   completedScan(): Scan | null {
-    return this.read<Scan>("completed-scan");
+    return this.withGroupAvatars(this.read<Scan>("completed-scan"));
+  }
+  /** Adds authenticated cache URLs to public group records without persisting browser URLs. */
+  private withGroupAvatars(scan: Scan | null): Scan | null {
+    if (!scan) return null;
+    const revisions = new Map<string, string>(
+      this.db
+        .prepare(
+          "SELECT person_id, photo_id FROM avatars WHERE person_id LIKE 'chat:%' OR person_id LIKE 'channel:%'",
+        )
+        .all()
+        .map((row) => [String(row.person_id), String(row.photo_id)] as const),
+    );
+    return {
+      ...scan,
+      people: scan.people.map((person) => ({
+        ...person,
+        groups: person.groups.map((group) => {
+          const revision = revisions.get(group.id);
+          return revision
+            ? {
+                ...group,
+                avatarUrl: `/api/avatars/${encodeURIComponent(group.id)}?v=${encodeURIComponent(revision)}`,
+              }
+            : group;
+        }),
+      })),
+    };
   }
   /** Persists just the encrypted authorization string, never login inputs. */
   saveSession(session: string): void {
@@ -159,11 +212,15 @@ export class Repository {
   }
   /** Removes cached graph/catalog data while retaining the connected session. */
   clearAnalysis(): void {
-    this.db.exec("DELETE FROM state WHERE key != 'session'; DELETE FROM avatars; VACUUM;");
+    this.db.exec(
+      "DELETE FROM state WHERE key != 'session'; DELETE FROM avatars; DELETE FROM group_avatar_absences; VACUUM;",
+    );
   }
   /** Removes all account data after logout or explicit local forgetting. */
   clearAll(): void {
-    this.db.exec("DELETE FROM state; DELETE FROM avatars; VACUUM;");
+    this.db.exec(
+      "DELETE FROM state; DELETE FROM avatars; DELETE FROM group_avatar_absences; VACUUM;",
+    );
   }
   /** Releases SQLite resources at server shutdown and in tests. */
   close(): void {

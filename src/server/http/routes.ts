@@ -4,6 +4,7 @@ import type { Config } from "../config.js";
 import { RequestError } from "../request-error.js";
 import type { ScanService } from "../scans/scan-service.js";
 import type { Repository } from "../storage/repository.js";
+import type { AvatarService } from "../telegram/avatar-service.js";
 import type { MetadataService } from "../telegram/metadata-service.js";
 import type { TelegramService } from "../telegram/telegram-service.js";
 
@@ -15,6 +16,7 @@ export function registerRoutes(
   scans: ScanService,
   metadata: MetadataService,
   config: Config,
+  avatars?: AvatarService,
 ): void {
   app.get("/api/telegram", async () => telegram.state());
   app.post<{ Body: { mode: "phone" | "qr" } }>(
@@ -67,10 +69,12 @@ export function registerRoutes(
   app.get("/api/snapshot", async () => ({
     people: repo.people(),
     scan: repo.scan(),
+    avatarLoading: avatars?.isRunning() ?? false,
   }));
   app.get("/api/snapshot/completed", async () => ({
     people: repo.people(),
     scan: repo.completedScan(),
+    avatarLoading: avatars?.isRunning() ?? false,
   }));
   app.get<{ Params: { personId: string } }>(
     "/api/avatars/:personId",
@@ -80,7 +84,9 @@ export function registerRoutes(
           type: "object",
           required: ["personId"],
           additionalProperties: false,
-          properties: { personId: { type: "string", pattern: "^user:[0-9]+$" } },
+          properties: {
+            personId: { type: "string", pattern: "^(user|chat|channel):[0-9]+$" },
+          },
         },
       },
     },

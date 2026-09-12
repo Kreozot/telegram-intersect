@@ -14,6 +14,7 @@ export function useWorkspace() {
   const [snapshot, setSnapshot] = useState<Snapshot>({
     people: [],
     scan: null,
+    avatarLoading: false,
   });
   const [telegram, setTelegram] = useState<TelegramStatus>({
     stage: "idle",
@@ -24,11 +25,16 @@ export function useWorkspace() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const pollingRequired = shouldPollWorkspace(authenticated, telegram.stage, snapshot.scan);
+  const pollingRequired = shouldPollWorkspace(
+    authenticated,
+    telegram.stage,
+    snapshot.scan,
+    snapshot.avatarLoading,
+  );
   /** Clears protected browser state after locking, expiry, or an unauthorized API response. */
   const clearWorkspace = useCallback(() => {
     setAuthenticated(false);
-    setSnapshot({ people: [], scan: null });
+    setSnapshot({ people: [], scan: null, avatarLoading: false });
     setTelegram({ stage: "idle", qr: null, error: null, configured: false });
   }, []);
 

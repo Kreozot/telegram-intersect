@@ -110,5 +110,13 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
         opacity: 1,
       },
     },
+    {
+      selector: 'node[kind = "group"][avatarUrl].hovered',
+      style: {
+        "background-image": "data(avatarUrl)",
+        "background-fit": "cover",
+        "background-clip": "node",
+      },
+    },
   ];
 }

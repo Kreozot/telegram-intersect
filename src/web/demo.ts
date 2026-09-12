@@ -79,6 +79,7 @@ export function demoSnapshot(): Snapshot {
   }));
   return {
     people,
+    avatarLoading: false,
     scan: {
       id: "demo",
       createdAt: "2026-09-10T12:00:00Z",

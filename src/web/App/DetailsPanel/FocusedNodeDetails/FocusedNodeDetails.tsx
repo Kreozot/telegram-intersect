@@ -35,7 +35,15 @@ export function FocusedNodeDetails({ node, neighbors, result, onFocus }: Props) 
             key={entry.id}
             onClick={() => onFocus(entry.id)}
           >
-            <span className={styles.symbol}>{entry.kind === "group" ? "#" : "○"}</span>
+            <span className={styles.symbol} aria-hidden="true">
+              {entry.avatarUrl ? (
+                <img className={styles.avatarImage} src={entry.avatarUrl} alt="" />
+              ) : entry.kind === "group" ? (
+                "#"
+              ) : (
+                "○"
+              )}
+            </span>
             <span className={styles.itemLabel}>{entry.label}</span>
             <span>↗</span>
           </button>

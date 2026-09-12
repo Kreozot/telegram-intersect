@@ -18,4 +18,5 @@ test("workspace polling runs only while authenticated asynchronous work can chan
   assert.equal(shouldPollWorkspace(true, "qr", null), true);
   assert.equal(shouldPollWorkspace(true, "connecting", null), true);
   assert.equal(shouldPollWorkspace(true, "authorized", runningScan), true);
+  assert.equal(shouldPollWorkspace(true, "authorized", completedScan, true), true);
 });

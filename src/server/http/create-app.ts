@@ -4,6 +4,7 @@ import { RequestError } from "../request-error.js";
 import type { ScanService } from "../scans/scan-service.js";
 import { registerAccess } from "../security/access.js";
 import type { Repository } from "../storage/repository.js";
+import type { AvatarService } from "../telegram/avatar-service.js";
 import type { MetadataService } from "../telegram/metadata-service.js";
 import type { TelegramService } from "../telegram/telegram-service.js";
 import { registerRoutes } from "./routes.js";
@@ -15,6 +16,7 @@ export function createApp(
   telegram: TelegramService,
   scans: ScanService,
   metadata: MetadataService,
+  avatars?: AvatarService,
 ) {
   const app = Fastify({
     logger: false,
@@ -22,7 +24,7 @@ export function createApp(
     requestTimeout: 120_000,
   });
   registerAccess(app, config);
-  registerRoutes(app, repo, telegram, scans, metadata, config);
+  registerRoutes(app, repo, telegram, scans, metadata, config, avatars);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof RequestError) return reply.code(409).send({ error: error.message });
     if (error instanceof Error && "validation" in error)

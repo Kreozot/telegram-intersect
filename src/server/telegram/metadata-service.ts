@@ -5,7 +5,7 @@ import { FloodWaitError } from "teleproto/errors/index.js";
 import type { PersonSource } from "../../shared/contracts.js";
 import { RequestError } from "../request-error.js";
 import type { Repository, StoredPerson } from "../storage/repository.js";
-import type { AvatarService } from "./avatar-service.js";
+import type { AvatarService, StoredGroupPhoto } from "./avatar-service.js";
 import { type GroupPage, RateLimitError, type TelegramGateway } from "./gateway.js";
 import { inputUser, normalizeDialogs, normalizePerson } from "./normalize.js";
 import type { PrivacyClient } from "./privacy-client.js";
@@ -139,17 +139,32 @@ export class MetadataService implements TelegramGateway {
           limit: 100,
         }),
       );
-      const groups = result.chats.flatMap((chat) =>
-        chat instanceof Api.Chat ||
-        (chat instanceof Api.Channel && (chat.megagroup || chat.gigagroup))
-          ? [
-              {
-                id: `${chat instanceof Api.Chat ? "chat" : "channel"}:${chat.id}`,
-                title: chat.title,
-              },
-            ]
-          : [],
-      );
+      const photoGroups: StoredGroupPhoto[] = [];
+      const groups = result.chats.flatMap((chat) => {
+        if (
+          !(
+            chat instanceof Api.Chat ||
+            (chat instanceof Api.Channel && (chat.megagroup || chat.gigagroup))
+          )
+        )
+          return [];
+        const id = `${chat instanceof Api.Chat ? "chat" : "channel"}:${chat.id}`;
+        if (
+          chat.photo instanceof Api.ChatPhoto &&
+          (chat instanceof Api.Chat || chat.accessHash !== undefined)
+        ) {
+          this.repo.markGroupWithAvatar(id);
+          photoGroups.push({
+            id,
+            ...(chat instanceof Api.Channel && chat.accessHash !== undefined
+              ? { accessHash: chat.accessHash.toString() }
+              : {}),
+            photo: { id: chat.photo.photoId.toString(), dcId: chat.photo.dcId },
+          });
+        } else if (!(chat.photo instanceof Api.ChatPhoto)) this.repo.markGroupWithoutAvatar(id);
+        return [{ id, title: chat.title }];
+      });
+      this.avatars?.enqueueGroups(photoGroups);
       const last = result.chats.at(-1);
       return {
         groups,

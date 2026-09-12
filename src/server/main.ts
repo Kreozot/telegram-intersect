@@ -16,7 +16,7 @@ async function main(): Promise<void> {
   const avatars = new AvatarService(repo, () => telegram.requireClient());
   const metadata = new MetadataService(repo, () => telegram.requireClient(), avatars);
   const scans = new ScanService(repo, metadata);
-  const app = createApp(config, repo, telegram, scans, metadata);
+  const app = createApp(config, repo, telegram, scans, metadata, avatars);
   if (process.argv.includes("--dev")) {
     const { createServer } = await import("vite");
     const { default: middie } = await import("@fastify/middie");

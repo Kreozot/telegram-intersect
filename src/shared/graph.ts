@@ -8,7 +8,7 @@ export function buildGraph(
 ): GraphData {
   const nodes: GraphData["nodes"] = [];
   const edges: GraphData["edges"] = [];
-  const groups = new Map<string, { title: string; count: number }>();
+  const groups = new Map<string, { title: string; count: number; avatarUrl?: string }>();
   for (const person of people) {
     if (!selected.has(person.id)) continue;
     const result = scan?.people.find((entry) => entry.personId === person.id);
@@ -25,6 +25,7 @@ export function buildGraph(
       groups.set(group.id, {
         title: group.title,
         count: (current?.count ?? 0) + 1,
+        ...(group.avatarUrl ? { avatarUrl: group.avatarUrl } : {}),
       });
       edges.push({
         id: `${person.id}/${group.id}`,
@@ -34,7 +35,13 @@ export function buildGraph(
     }
   }
   for (const [id, group] of groups)
-    nodes.push({ id, label: group.title, kind: "group", count: group.count });
+    nodes.push({
+      id,
+      label: group.title,
+      kind: "group",
+      count: group.count,
+      ...(group.avatarUrl ? { avatarUrl: group.avatarUrl } : {}),
+    });
   return { nodes, edges };
 }
 

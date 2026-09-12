@@ -12,6 +12,7 @@ Updated: 2026-09-12. Checkboxes describe verified outcomes, not merely intended 
 - [x] Authorize loopback-only owner access automatically while retaining access-key sessions for hosted mode.
 - [x] Implement normalized people discovery, independent source merging, filters, search, and selection.
 - [x] Add non-blocking static profile-avatar loading with authenticated local caching.
+- [x] Extend the avatar cache to observed communities and show photos in the community lens and graph.
 - [x] Implement sequential common-group scans, pagination, flood waits, checkpoint persistence, cancellation, and restart/resume behavior.
 - [x] Trigger common-group scans from selection and allow the active durable queue to expand.
 - [x] Enforce a configurable simultaneous people-selection limit, defaulting to 50.

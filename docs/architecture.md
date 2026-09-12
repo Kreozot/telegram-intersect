@@ -48,7 +48,12 @@ position, not message fields. Nothing serializes raw Telegram objects. See priva
 
 ## Stored data and scan semantics
 
-SQLite stores allowlisted person metadata, server-only access hashes and photo locators, cached static profile images, the current scan, the last fully completed scan, and encrypted authorization material. IDs remain namespaced decimal strings. Scan entries include groups, status, cursor, observation timestamp, and retry time. Avatar URLs are authenticated application endpoints versioned by the cached photo ID; an existing image remains visible until its replacement has been validated and saved.
+SQLite stores allowlisted person metadata, server-only access hashes and person photo locators,
+cached static person and group images, the current scan, the last fully completed scan, and encrypted
+authorization material. IDs remain namespaced decimal strings. Scan entries include groups, status,
+cursor, observation timestamp, and retry time. Avatar URLs are authenticated application endpoints
+versioned by the cached photo ID; an existing image remains visible until its replacement has been
+validated and saved.
 
 Each page is persisted atomically. Completed snapshots remain separate from in-progress refreshes. Cancelled or failed scans retain observed edges and checkpoints; they never become authoritative empty results. Restart marks interrupted jobs as cancelled for explicit resume. Rate-limit retry times are retained across restart. The graph shown by default is the current scan; the previous completed snapshot is available through the API.
 

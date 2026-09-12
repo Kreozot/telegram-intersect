@@ -136,3 +136,41 @@ test("adds newly selected people to an active background scan without replacing 
   );
   repo.close();
 });
+
+test("refreshes legacy completed groups once to discover avatar availability", async () => {
+  const repo = repository();
+  repo.saveScan({
+    id: "legacy",
+    createdAt: new Date(0).toISOString(),
+    running: false,
+    people: [
+      {
+        personId: "user:1",
+        status: "completed",
+        groups: [{ id: "chat:1", title: "Legacy group" }],
+        cursor: "1",
+        error: null,
+        retryAt: null,
+        observedAt: new Date(0).toISOString(),
+      },
+    ],
+  });
+  let calls = 0;
+  const scans = new ScanService(
+    repo,
+    {
+      commonGroups: async () => {
+        calls++;
+        repo.markGroupWithoutAvatar("chat:1");
+        return { groups: [{ id: "chat:1", title: "Legacy group" }], nextCursor: null };
+      },
+    },
+    0,
+  );
+  scans.enqueue(["user:1"]);
+  await scans.settled();
+  scans.enqueue(["user:1"]);
+  await scans.settled();
+  assert.equal(calls, 1);
+  repo.close();
+});

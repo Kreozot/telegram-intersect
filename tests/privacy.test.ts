@@ -144,13 +144,36 @@ test("storage strips extra fields and session encryption rejects tampering", () 
   assert.equal("accessHash" in (repo.people()[0] ?? {}), false);
   assert.equal(repo.people()[0]?.dialogOrder, 4);
   repo.saveAvatar({
-    personId: "user:1",
+    entityId: "user:1",
     photoId: "9",
     contentType: "image/jpeg",
     bytes: Buffer.from([0xff, 0xd8, 0xff]),
   });
   assert.equal(repo.people()[0]?.avatarUrl, "/api/avatars/user%3A1?v=9");
   assert.deepEqual(repo.avatar("user:1")?.bytes, Buffer.from([0xff, 0xd8, 0xff]));
+  repo.saveAvatar({
+    entityId: "channel:12",
+    photoId: "10",
+    contentType: "image/png",
+    bytes: Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+  });
+  repo.saveScan({
+    id: "scan-1",
+    createdAt: new Date(0).toISOString(),
+    running: false,
+    people: [
+      {
+        personId: "user:1",
+        status: "completed",
+        groups: [{ id: "channel:12", title: "Group" }],
+        cursor: "0",
+        error: null,
+        retryAt: null,
+        observedAt: new Date(0).toISOString(),
+      },
+    ],
+  });
+  assert.equal(repo.scan()?.people[0]?.groups[0]?.avatarUrl, "/api/avatars/channel%3A12?v=10");
   repo.saveSession("SECRET_SESSION");
   assert.equal(repo.session(), "SECRET_SESSION");
   const ciphertext = seal("SECRET_SESSION", key);
