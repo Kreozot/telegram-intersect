@@ -1,4 +1,5 @@
 export type PersonSource = "contacts" | "dialogs";
+export type MapMode = "people" | "communities";
 export interface Person {
   id: string;
   name: string;

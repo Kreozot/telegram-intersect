@@ -21,9 +21,10 @@ Select a community to focus its graph connections and see every selected person 
 ## Features
 
 - Telegram QR or phone/code sign-in, including two-step verification.
-- Separate contact and dialog discovery, search, source filters, activity/A–Z sorting, and bulk selection.
+- Persistent contact/dialog source controls, People/Communities map modes, search, activity/A–Z
+  sorting, and bulk selection.
 - Cache-first static profile avatars downloaded sequentially after catalog loading.
-- Cache-first community avatars shown in the community lens and revealed on graph hover.
+- Cache-first community avatars shown in the community lens and always visible in the graph.
 - Cytoscape graph with neighborhood highlighting, zoom, fit, community counts, and a keyboard-accessible details panel.
 - Light and dark themes, plus a clearly labeled synthetic demo requiring no account.
 - Sequential scans with pagination, Telegram flood waits, cancellation, checkpoints, and resume after a restart.
@@ -71,7 +72,7 @@ ACL.
 
 Loading contacts alone does not query groups. Selecting people adds them to a sequential background scan after a short debounce. Until observations arrive, community/connection counts show **—** (unknown). A zero is only confirmed after every selected person has completed scanning; partial scans may already show observed connections. Completed observations are reused when a person is selected again.
 
-For two or more selected people, **Only intersections** initially shows groups observed for at least two of them. Turn it off to include groups observed for just one selected person. The displayed/total counter explains this filter; summary metrics always describe the full selection. People appear as circular avatars with naturally sized name labels underneath, while group markers show the number of selected people. Hover or select a group for its name, and select a person to highlight their connections. Full titles remain available in the details panel.
+For two or more selected people, **Only intersections** initially shows groups observed for at least two of them. Turn it off to include groups observed for just one selected person. The displayed/total counter explains this filter; summary metrics always describe the full selection. People and groups appear as circular avatars, with group-border color indicating the observed selected-person count. Group markers enlarge slightly on hover or selection and show their names there; selecting a person highlights their connections. Full titles remain available in the details panel.
 
 SMS delivery is not guaranteed for third-party clients. Telegram may deliver a code through an existing Telegram session. Unsupported email setup, CAPTCHA, registration, or other additional authorization challenges are reported as unsupported; try the QR flow for an existing account. Never paste Telegram secrets into issues or logs.
 

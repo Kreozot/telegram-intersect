@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { AppStatus, Snapshot, TelegramStatus } from "../../shared/contracts.js";
+import type { AppStatus, PersonSource, Snapshot, TelegramStatus } from "../../shared/contracts.js";
 import { limitSelection, toggleSelection } from "../../shared/selection.js";
 import { ApiError, api } from "../api/client.js";
 import { demoSnapshot } from "../demo.js";
@@ -23,6 +23,21 @@ export function useWorkspace() {
     configured: false,
   });
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectedCommunities, setSelectedCommunities] = useState<Set<string>>(new Set());
+  const [enabledSources, setEnabledSources] = useState<Set<PersonSource>>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("intersect.catalog-sources") ?? "[]");
+      return new Set(
+        Array.isArray(saved)
+          ? saved.filter(
+              (source): source is PersonSource => source === "contacts" || source === "dialogs",
+            )
+          : [],
+      );
+    } catch {
+      return new Set();
+    }
+  });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const pollingRequired = shouldPollWorkspace(
@@ -171,6 +186,15 @@ export function useWorkspace() {
     setDemo(false);
     setSelected(new Set());
   }
+  /** Enables or hides a catalog source and loads it when the owner activates it. */
+  async function setSourceEnabled(source: PersonSource, enabled: boolean): Promise<void> {
+    const next = new Set(enabledSources);
+    if (enabled) next.add(source);
+    else next.delete(source);
+    setEnabledSources(next);
+    localStorage.setItem("intersect.catalog-sources", JSON.stringify([...next]));
+    if (enabled && !demo) await command("people", { source });
+  }
   /** Toggles one person by stable identity while preserving independent source selections. */
   const toggle = useCallback(
     (id: string): void => {
@@ -192,6 +216,10 @@ export function useWorkspace() {
     snapshot: demo ? demoSnapshot() : snapshot,
     telegram,
     selected,
+    selectedCommunities,
+    selectCommunities: setSelectedCommunities,
+    enabledSources,
+    setSourceEnabled,
     select,
     maxSelectedPeople,
     error,

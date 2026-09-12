@@ -1,22 +1,30 @@
-import { Button, Checkbox, SegmentedControl, TextInput } from "@mantine/core";
+import { Checkbox, SegmentedControl, TextInput } from "@mantine/core";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import type { Person, PersonSource, Scan } from "../../../shared/contracts.js";
-import { limitSelection } from "../../../shared/selection.js";
+import type { Group, MapMode, Person, PersonSource, Scan } from "../../../shared/contracts.js";
+import { limitSelection, toggleSelection } from "../../../shared/selection.js";
+import { CommunityRow } from "./CommunityRow/CommunityRow.js";
 import styles from "./PeoplePanel.module.css";
 import { PersonRow } from "./PersonRow/PersonRow.js";
 import { ScanActions } from "./ScanActions/ScanActions.js";
+import { sortCommunities } from "./sort-communities.js";
 import { type PeopleSort, sortPeople } from "./sort-people.js";
 
 interface Props {
   people: Person[];
   selected: Set<string>;
+  selectedCommunities: Set<string>;
+  communities: Group[];
+  mode: MapMode;
+  enabledSources: Set<PersonSource>;
   scan: Scan | null;
   demo: boolean;
   busy: boolean;
   maxSelectedPeople: number;
   onToggle: (id: string) => void;
   onSelect: (ids: Set<string>) => void;
-  onLoad: (source: PersonSource) => Promise<void>;
+  onSelectCommunities: (ids: Set<string>) => void;
+  onModeChange: (mode: MapMode) => void;
+  onSourceChange: (source: PersonSource, enabled: boolean) => Promise<void>;
   onCancel: () => Promise<void>;
   onResume: () => Promise<void>;
 }
@@ -24,18 +32,23 @@ interface Props {
 export function PeoplePanel({
   people,
   selected,
+  selectedCommunities,
+  communities,
+  mode,
+  enabledSources,
   scan,
   demo,
   busy,
   maxSelectedPeople,
   onToggle,
   onSelect,
-  onLoad,
+  onSelectCommunities,
+  onModeChange,
+  onSourceChange,
   onCancel,
   onResume,
 }: Props) {
   const [query, setQuery] = useState("");
-  const [source, setSource] = useState<"all" | PersonSource>("all");
   const [sort, setSort] = useState<PeopleSort>("recent");
   const [selectedFirst, setSelectedFirst] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -43,7 +56,7 @@ export function PeoplePanel({
   const filtered = sortPeople(
     people.filter(
       (person) =>
-        (source === "all" || person.sources.includes(source)) &&
+        person.sources.some((source) => enabledSources.has(source)) &&
         `${person.name} ${person.username ?? ""}`.toLowerCase().includes(query.toLowerCase()),
     ),
     sort,
@@ -51,6 +64,15 @@ export function PeoplePanel({
     selected,
   );
   const allSelected = filtered.length > 0 && filtered.every((person) => selected.has(person.id));
+  const filteredCommunities = sortCommunities(
+    communities.filter((community) => community.title.toLowerCase().includes(query.toLowerCase())),
+    sort,
+    selectedFirst,
+    selectedCommunities,
+  );
+  const allCommunitiesSelected =
+    filteredCommunities.length > 0 &&
+    filteredCommunities.every((community) => selectedCommunities.has(community.id));
   useLayoutEffect(() => {
     if (pendingScrollTop.current === null || !listRef.current) return;
     listRef.current.scrollTop = pendingScrollTop.current;
@@ -85,60 +107,69 @@ export function PeoplePanel({
     for (const person of filtered) next.delete(person.id);
     onSelect(next);
   }
+  /** Selects or clears visible communities without changing the people-mode selection. */
+  function selectVisibleCommunities(): void {
+    preserveSelectionScroll();
+    const next = new Set(selectedCommunities);
+    if (!allCommunitiesSelected) {
+      onSelectCommunities(
+        limitSelection(
+          next,
+          filteredCommunities.map((community) => community.id),
+          maxSelectedPeople,
+        ),
+      );
+      return;
+    }
+    for (const community of filteredCommunities) next.delete(community.id);
+    onSelectCommunities(next);
+  }
   return (
     <section className={styles.panel}>
       <div className={styles.title}>
-        <span>YOUR PEOPLE</span>
-        <span className={styles.titleCount}>{people.length}</span>
+        <span>MAP INPUTS</span>
+        <span className={styles.titleCount}>
+          {mode === "people" ? filtered.length : communities.length}
+        </span>
       </div>
       {!demo && (
         <div className={styles.imports}>
-          <Button
-            size="xs"
-            variant="light"
-            loading={busy}
-            disabled={scan?.running ?? false}
-            onClick={() => {
-              void onLoad("contacts");
-            }}
-          >
-            Load contacts
-          </Button>
-          <Button
-            size="xs"
-            variant="default"
-            loading={busy}
-            disabled={scan?.running ?? false}
-            onClick={() => {
-              void onLoad("dialogs");
-            }}
-          >
-            Load dialogs
-          </Button>
+          {(["contacts", "dialogs"] as const).map((source) => (
+            <Checkbox
+              key={source}
+              size="xs"
+              label={source === "contacts" ? "Contacts" : "Dialogs"}
+              checked={enabledSources.has(source)}
+              disabled={busy || (scan?.running ?? false)}
+              onChange={(event) => {
+                void onSourceChange(source, event.currentTarget.checked);
+              }}
+            />
+          ))}
         </div>
       )}
       <div className={styles.tabs}>
-        {(["all", "contacts", "dialogs"] as const).map((item) => (
+        {(["people", "communities"] as const).map((item) => (
           <button
             type="button"
             key={item}
-            className={`${styles.tabButton} ${source === item ? styles.active : ""}`}
-            onClick={() => setSource(item)}
+            className={`${styles.tabButton} ${mode === item ? styles.active : ""}`}
+            onClick={() => onModeChange(item)}
           >
-            {item === "all" ? "Everyone" : item === "contacts" ? "Contacts" : "Dialogs"}
+            {item === "people" ? "People" : "Communities"}
           </button>
         ))}
       </div>
       <TextInput
-        aria-label="Search people"
-        placeholder="Search people…"
+        aria-label={mode === "people" ? "Search people" : "Search communities"}
+        placeholder={mode === "people" ? "Search people…" : "Search communities…"}
         value={query}
         onChange={(event) => setQuery(event.currentTarget.value)}
       />
       <div className={styles.sortControls}>
         <SegmentedControl
           size="xs"
-          aria-label="Sort people"
+          aria-label={mode === "people" ? "Sort people" : "Sort communities"}
           data={[
             { value: "recent", label: "Recent" },
             { value: "alphabetical", label: "A–Z" },
@@ -160,55 +191,95 @@ export function PeoplePanel({
         <Checkbox
           size="xs"
           label="Select visible"
-          checked={allSelected}
-          indeterminate={!allSelected && filtered.some((p) => selected.has(p.id))}
-          onChange={selectVisible}
+          checked={mode === "people" ? allSelected : allCommunitiesSelected}
+          indeterminate={
+            mode === "people"
+              ? !allSelected && filtered.some((p) => selected.has(p.id))
+              : !allCommunitiesSelected &&
+                filteredCommunities.some((group) => selectedCommunities.has(group.id))
+          }
+          onChange={mode === "people" ? selectVisible : selectVisibleCommunities}
         />
         <button
           className={styles.selectionButton}
           type="button"
           onClick={() => {
             preserveSelectionScroll();
-            onSelect(new Set());
+            if (mode === "people") onSelect(new Set());
+            else onSelectCommunities(new Set());
           }}
         >
           Clear
         </button>
       </div>
       <div className={styles.list} ref={listRef}>
-        {filtered.map((person) => {
-          const scanResult = scan?.people.find((entry) => entry.personId === person.id);
-          return (
-            <PersonRow
-              key={person.id}
-              person={person}
-              checked={selected.has(person.id)}
-              disabled={!selected.has(person.id) && selected.size >= maxSelectedPeople}
-              status={scanResult?.status ?? null}
-              commonGroupCount={
-                scanResult?.status === "completed" ? scanResult.groups.length : null
-              }
-              onToggle={togglePerson}
-            />
-          );
-        })}
-        {!filtered.length && (
+        {mode === "people" &&
+          filtered.map((person) => {
+            const scanResult = scan?.people.find((entry) => entry.personId === person.id);
+            return (
+              <PersonRow
+                key={person.id}
+                person={person}
+                checked={selected.has(person.id)}
+                disabled={!selected.has(person.id) && selected.size >= maxSelectedPeople}
+                status={scanResult?.status ?? null}
+                commonGroupCount={
+                  scanResult?.status === "completed" ? scanResult.groups.length : null
+                }
+                onToggle={togglePerson}
+              />
+            );
+          })}
+        {mode === "communities" &&
+          filteredCommunities.map((community) => {
+            const observedPeople = people.filter(
+              (person) =>
+                person.sources.some((source) => enabledSources.has(source)) &&
+                scan?.people
+                  .find((entry) => entry.personId === person.id)
+                  ?.groups.some((group) => group.id === community.id),
+            ).length;
+            return (
+              <CommunityRow
+                key={community.id}
+                community={community}
+                checked={selectedCommunities.has(community.id)}
+                disabled={
+                  !selectedCommunities.has(community.id) &&
+                  selectedCommunities.size >= maxSelectedPeople
+                }
+                observedPeople={observedPeople}
+                onToggle={(id) => {
+                  preserveSelectionScroll();
+                  onSelectCommunities(toggleSelection(selectedCommunities, id, maxSelectedPeople));
+                }}
+              />
+            );
+          })}
+        {!(mode === "people" ? filtered.length : filteredCommunities.length) && (
           <p className={styles.empty}>
-            {people.length
-              ? "No people match this filter."
-              : "Load contacts or dialog identities to begin."}
+            {mode === "people"
+              ? enabledSources.size === 0
+                ? "Enable Contacts or Dialogs to show people."
+                : "No people match this filter."
+              : communities.length
+                ? "No communities match this search."
+                : "Communities appear after people have been scanned."}
           </p>
         )}
       </div>
       <div className={styles.bottom}>
         <div className={styles.selectionSummary}>
-          <strong className={styles.selectionCount}>{selected.size}</strong> / {maxSelectedPeople}{" "}
-          people selected
+          <strong className={styles.selectionCount}>
+            {mode === "people" ? selected.size : selectedCommunities.size}
+          </strong>{" "}
+          / {maxSelectedPeople} {mode === "people" ? "people" : "communities"} selected
         </div>
         <ScanActions scan={scan} demo={demo} onCancel={onCancel} onResume={onResume} />
         <p className={styles.bottomNote}>
-          Selecting people checks their shared groups in the background. Only groups shared with
-          your account are requested.
+          {mode === "people"
+            ? "Selecting people checks their shared groups in the background."
+            : "Selected communities are compared through already observed people from enabled sources."}
         </p>
       </div>
     </section>

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { GraphData } from "../src/shared/contracts.js";
-import { filterCommunities } from "../src/shared/graph-filter.js";
+import { filterCommunities, filterIntersections } from "../src/shared/graph-filter.js";
 
 test("dense graph filtering preserves people and every edge of shared communities", () => {
   const graph: GraphData = {
@@ -27,6 +27,28 @@ test("dense graph filtering preserves people and every edge of shared communitie
   assert.equal(graph.nodes.length, 138);
   assert.equal(filterCommunities(graph, false), graph);
   assert.ok(filtered.edges.every((edge) => filtered.nodes.some((node) => node.id === edge.target)));
+});
+
+test("community mode retains selected groups and people shared by two of them", () => {
+  const graph: GraphData = {
+    nodes: [
+      { id: "user:1", label: "Alice", kind: "person", count: 2 },
+      { id: "user:2", label: "Bob", kind: "person", count: 1 },
+      { id: "chat:1", label: "One", kind: "group", count: 2 },
+      { id: "chat:2", label: "Two", kind: "group", count: 1 },
+    ],
+    edges: [
+      { id: "1", source: "user:1", target: "chat:1" },
+      { id: "2", source: "user:1", target: "chat:2" },
+      { id: "3", source: "user:2", target: "chat:1" },
+    ],
+  };
+  const filtered = filterIntersections(graph, true, "communities");
+  assert.deepEqual(
+    filtered.nodes.map((node) => node.id),
+    ["user:1", "chat:1", "chat:2"],
+  );
+  assert.equal(filtered.edges.length, 2);
 });
 
 test("one-person maps retain their communities and disjoint maps retain people", () => {

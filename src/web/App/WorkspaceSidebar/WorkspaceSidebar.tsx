@@ -1,4 +1,5 @@
-import type { PersonSource } from "../../../shared/contracts.js";
+import type { MapMode } from "../../../shared/contracts.js";
+import { observedCommunities } from "../../../shared/graph.js";
 import { AccessPanel } from "../AccessPanel/AccessPanel.js";
 import { LoginPanel } from "../LoginPanel/LoginPanel.js";
 import { PeoplePanel } from "../PeoplePanel/PeoplePanel.js";
@@ -8,11 +9,13 @@ import styles from "./WorkspaceSidebar.module.css";
 interface Props {
   workspace: Workspace;
   connected: boolean;
+  mode: MapMode;
+  onModeChange: (mode: MapMode) => void;
   onConfirm: (kind: "logout" | "data") => void;
 }
 
 /** Selects the sidebar block for the current access, Telegram, or catalog workflow state. */
-export function WorkspaceSidebar({ workspace, connected, onConfirm }: Props) {
+export function WorkspaceSidebar({ workspace, connected, mode, onModeChange, onConfirm }: Props) {
   let content: React.ReactNode;
   if (!workspace.authenticated && !workspace.demo) {
     content = (
@@ -37,13 +40,21 @@ export function WorkspaceSidebar({ workspace, connected, onConfirm }: Props) {
       <PeoplePanel
         people={workspace.snapshot.people}
         selected={workspace.selected}
+        selectedCommunities={workspace.selectedCommunities}
+        communities={observedCommunities(workspace.snapshot.scan)}
+        mode={mode}
+        enabledSources={
+          workspace.demo ? new Set(["contacts", "dialogs"] as const) : workspace.enabledSources
+        }
         scan={workspace.snapshot.scan}
         demo={workspace.demo}
         busy={workspace.busy}
         maxSelectedPeople={workspace.maxSelectedPeople}
         onToggle={workspace.toggle}
         onSelect={workspace.select}
-        onLoad={(source: PersonSource) => workspace.command("people", { source })}
+        onSelectCommunities={workspace.selectCommunities}
+        onModeChange={onModeChange}
+        onSourceChange={workspace.setSourceEnabled}
         onCancel={() => workspace.command("scans/cancel")}
         onResume={() => workspace.command("scans/resume")}
       />

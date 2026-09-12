@@ -11,12 +11,16 @@ test("maps community intersections from cool to warm across the selected people"
   assert.equal(getGroupTemperatureColor(5, 5), "hsl(0, 72%, 58%)");
 });
 
-test("adds temperature colors to communities using people as the upper bound", () => {
+test("adds temperature colors and proportional marker sizes to render nodes", () => {
   const nodes = addGroupTemperatureColors([
     { id: "user:1", label: "Alice", kind: "person", count: 2 },
     { id: "user:2", label: "Bob", kind: "person", count: 1 },
     { id: "chat:1", label: "Shared", kind: "group", count: 2 },
   ]);
 
-  assert.equal(nodes.find((node) => node.id === "chat:1")?.temperatureColor, "hsl(0, 72%, 58%)");
+  const group = nodes.find((node) => node.id === "chat:1");
+  assert.equal(group?.temperatureColor, "hsl(0, 72%, 58%)");
+  assert.ok(group);
+  assert.ok(group.hoverSize > group.nodeSize);
+  assert.equal(group.hoverSize / group.nodeSize, 1.12);
 });

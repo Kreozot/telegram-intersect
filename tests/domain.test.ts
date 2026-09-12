@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Person, Scan } from "../src/shared/contracts.js";
-import { buildGraph, mergePeople } from "../src/shared/graph.js";
+import {
+  buildGraph,
+  filterPeopleBySources,
+  mergePeople,
+  observedCommunities,
+} from "../src/shared/graph.js";
+import { sortCommunities } from "../src/web/App/PeoplePanel/sort-communities.js";
 import { sortPeople } from "../src/web/App/PeoplePanel/sort-people.js";
 
 test("deduplicates identity sources and excludes unselected people from community counts", () => {
@@ -53,6 +59,64 @@ test("deduplicates identity sources and excludes unselected people from communit
   assert.equal(
     graph.nodes.find((node) => node.id === "chat:1")?.avatarUrl,
     "/api/avatars/chat%3A1?v=4",
+  );
+});
+
+test("inverts observed memberships when communities are selected", () => {
+  const people: Person[] = [
+    { id: "user:1", name: "Alice", username: null, sources: ["contacts"] },
+    { id: "user:2", name: "Bob", username: null, sources: ["dialogs"] },
+  ];
+  const scan: Scan = {
+    id: "scan",
+    createdAt: "",
+    running: false,
+    people: people.map((person) => ({
+      personId: person.id,
+      status: "completed",
+      cursor: "0",
+      error: null,
+      retryAt: null,
+      observedAt: "",
+      groups: [
+        { id: "chat:1", title: "Shared" },
+        ...(person.id === "user:1" ? [{ id: "chat:2", title: "Contact only" }] : []),
+      ],
+    })),
+  };
+  assert.deepEqual(
+    filterPeopleBySources(people, new Set(["contacts"])).map((person) => person.id),
+    ["user:1"],
+  );
+  assert.deepEqual(
+    observedCommunities(scan).map((group) => group.id),
+    ["chat:1", "chat:2"],
+  );
+  const graph = buildGraph(people, scan, new Set(["chat:1", "chat:2"]), "communities");
+  assert.equal(graph.nodes.find((node) => node.id === "user:1")?.count, 2);
+  assert.equal(graph.nodes.find((node) => node.id === "user:2")?.count, 1);
+  assert.equal(graph.nodes.find((node) => node.id === "chat:1")?.count, 2);
+  assert.equal(graph.edges.length, 3);
+});
+
+test("sorts communities by discovery or title with independent selected priority", () => {
+  const communities = [
+    { id: "chat:2", title: "Zulu" },
+    { id: "chat:1", title: "Alpha" },
+  ];
+  assert.deepEqual(
+    sortCommunities(communities, "recent", false, new Set()).map((group) => group.id),
+    ["chat:2", "chat:1"],
+  );
+  assert.deepEqual(
+    sortCommunities(communities, "alphabetical", false, new Set()).map((group) => group.id),
+    ["chat:1", "chat:2"],
+  );
+  assert.deepEqual(
+    sortCommunities(communities, "alphabetical", true, new Set(["chat:2"])).map(
+      (group) => group.id,
+    ),
+    ["chat:2", "chat:1"],
   );
 });
 

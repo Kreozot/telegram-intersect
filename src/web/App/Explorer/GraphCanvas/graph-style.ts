@@ -61,17 +61,27 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
       style: {
         label: "data(count)",
         shape: "ellipse",
-        width: "mapData(count, 1, 10, 24, 46)",
-        height: "mapData(count, 1, 10, 24, 46)",
+        width: "data(nodeSize)",
+        height: "data(nodeSize)",
         "z-index": 1,
         color: "#ffffff",
         "text-outline-color": "#102d28",
         "text-outline-width": 1,
-        "background-color": "data(temperatureColor)",
-        "border-color": "#2b7569",
-        "border-width": 2,
+        "background-color": "#2b7569",
+        "background-fit": "cover",
+        "background-clip": "node",
+        "border-color": "data(temperatureColor)",
+        "border-width": 4,
         "font-weight": 600,
         "font-size": 11,
+      },
+    },
+    {
+      selector: 'node[kind = "group"][avatarUrl]',
+      style: {
+        "background-image": "data(avatarUrl)",
+        "background-position-x": "50%",
+        "background-position-y": "50%",
       },
     },
     {
@@ -86,7 +96,15 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
     { selector: ".dimmed", style: { opacity: 0.08 } },
     {
       selector: ".highlighted",
-      style: { opacity: 1, "border-color": "#f4ce82", "border-width": 4 },
+      style: { opacity: 1, "border-width": 4 },
+    },
+    {
+      selector: 'node[kind = "person"].highlighted',
+      style: { "border-color": "#f4ce82" },
+    },
+    {
+      selector: 'node[kind = "group"].highlighted',
+      style: { "border-width": 6 },
     },
     {
       selector: "edge.highlighted",
@@ -95,6 +113,8 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
     {
       selector: 'node[kind = "group"].hovered, node[kind = "group"].focused',
       style: {
+        width: "data(hoverSize)",
+        height: "data(hoverSize)",
         label: "data(label)",
         color: text,
         "text-outline-width": 0,
@@ -108,14 +128,6 @@ export function graphStyles(element: HTMLElement): StylesheetJson {
         "font-size": 20,
         "z-index": 20,
         opacity: 1,
-      },
-    },
-    {
-      selector: 'node[kind = "group"][avatarUrl].hovered',
-      style: {
-        "background-image": "data(avatarUrl)",
-        "background-fit": "cover",
-        "background-clip": "node",
       },
     },
   ];

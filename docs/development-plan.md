@@ -4,6 +4,9 @@ Updated: 2026-09-12. Checkboxes describe verified outcomes, not merely intended 
 
 ## Completed implementation
 
+- [x] Add persistent Contacts/Dialogs source controls and People/Communities map projections over
+  observed membership data.
+
 - [x] Record requirements, architecture, coding practices, style, and agent instructions in English.
 - [x] Obtain stack/single-owner approval and subsequent teleproto substitution approval.
 - [x] Record explicit permission to discard incidental dialog top messages.
@@ -43,7 +46,7 @@ Initial synthetic tests cover privacy normalization, method blocking, encryption
 
 ## Known scope and limitations
 
-Dense-map readability: replaced always-visible community titles with compact count markers and hover/selection names, emphasized people, added a cool-to-warm group color scale for observed selected-person counts, added a default optional intersection filter, and separated residual node collisions after CoSE. Browser verification uses a synthetic 3-person, 135-community, 187-edge fixture in both filtered and complete views. Automated tests cover filter integrity, temperature-scale derivation, and collision separation; arbitrary large datasets remain unbenchmarked.
+Dense-map readability: replaced always-visible community titles with compact avatar/count markers and hover/selection names, emphasized people, added a cool-to-warm group-border scale for observed selected-person counts, added a default optional intersection filter, and separated residual node collisions after CoSE. Browser verification uses a synthetic 3-person, 135-community, 187-edge fixture in both filtered and complete views. Automated tests cover filter integrity, temperature-scale derivation, and collision separation; arbitrary large datasets remain unbenchmarked.
 
 An owner-reported zero-community result was traced to an imported catalog with no scan record. Catalog import alone does not run group discovery. Selecting people now queues discovery asynchronously, and the explorer shows an unknown count until observations establish a value. Zero is shown for an empty selection result only after all selected people have completed scanning.
 

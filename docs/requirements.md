@@ -5,6 +5,10 @@
 - Build a full-stack Telegram user client with a browser UI and a server listening on a configurable port; support local and server deployment.
 - Sign in with a regular Telegram account and analyze shared communities, rather than implement messaging.
 - Select individuals from saved contacts or private conversations; provide select-all actions for both sources and their deduplicated union.
+- Switch between People and Communities map modes. Communities mode selects previously observed
+  chats and shows observed people as their shared elements.
+- Use persistent Contacts and Dialogs source checkboxes to load and show catalog identities; apply
+  the same source visibility to people shown in Communities maps.
 - Visualize people, groups, and their intersections using an existing free graph library.
 - Show how many selected people belong to each discovered shared group and allow inspecting those people.
 - Provide a polished UI with light and dark themes using an appropriate component kit.
@@ -19,7 +23,7 @@
 - A configurable simultaneous people-selection limit, defaulting to 50.
 - Static profile avatars loaded in the background with local cache-first display and initials fallback.
 - Static community avatars loaded from observed common chats with the same private cache-first model,
-  shown in the community lens and revealed on graph-node hover.
+  shown in the community lens and always visible on graph nodes when available.
 - A bipartite person–group graph, group counts, neighborhood highlighting, and a details panel. A group–group projection may follow: edge weight means the number of selected people observed in both groups.
 - Group selection filters the graph. Importing all participants of a selected group is a separate, unapproved feature whose completeness depends on API access.
 - Include archived private dialogs when available. Exclude bots, self, and deleted accounts from the default people selection; explain exclusions.

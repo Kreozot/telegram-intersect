@@ -26,9 +26,9 @@ Date: 2026-09-12. Status: ACCEPTED — requested by the owner.
 
 Apply the same bounded static-image cache and authenticated endpoint to group photos observed during
 common-chat scans. Group photo locators remain transient server-side inputs; only normalized group
-metadata and local versioned avatar URLs reach the browser. The details list and focused-community
-header show cached photos, while graph group nodes reveal them on hover without replacing their
-intersection-count markers at rest.
+metadata and local versioned avatar URLs reach the browser. The details list, focused-community
+header, and graph group nodes show cached photos. Graph nodes retain their intersection-count labels,
+use the cool-to-warm count scale on their borders, and enlarge slightly on hover or selection.
 
 Completed scans created before this extension have no retained group-photo locators. When one of
 those people is selected again, the server refreshes that completed result once if any group has

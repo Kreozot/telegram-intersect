@@ -1,7 +1,22 @@
 import type { GraphNode } from "../../../../shared/contracts.js";
 
 interface RenderGraphNode extends GraphNode {
+  hoverSize: number;
+  nodeSize: number;
   temperatureColor: string;
+}
+
+const minimumGroupSize = 24;
+const maximumGroupSize = 46;
+const maximumScaledCount = 10;
+const hoverScale = 1.12;
+
+/** Derives a bounded community marker size and its proportional hover enlargement. */
+function getGroupSizes(count: number): Pick<RenderGraphNode, "hoverSize" | "nodeSize"> {
+  const boundedCount = Math.min(Math.max(count, 1), maximumScaledCount);
+  const ratio = (boundedCount - 1) / (maximumScaledCount - 1);
+  const nodeSize = minimumGroupSize + ratio * (maximumGroupSize - minimumGroupSize);
+  return { nodeSize, hoverSize: nodeSize * hoverScale };
 }
 
 /**
@@ -19,11 +34,16 @@ export function getGroupTemperatureColor(count: number, selectedPeople: number):
 /** Adds renderer-only temperature colors without expanding the shared graph contract. */
 export function addGroupTemperatureColors(nodes: readonly GraphNode[]): RenderGraphNode[] {
   const selectedPeople = nodes.filter((node) => node.kind === "person").length;
-  return nodes.map((node) => ({
-    ...node,
-    temperatureColor:
-      node.kind === "group"
-        ? getGroupTemperatureColor(node.count, selectedPeople)
-        : "hsl(217, 36%, 64%)",
-  }));
+  return nodes.map((node) => {
+    const sizes =
+      node.kind === "group" ? getGroupSizes(node.count) : { nodeSize: 64, hoverSize: 64 };
+    return {
+      ...node,
+      ...sizes,
+      temperatureColor:
+        node.kind === "group"
+          ? getGroupTemperatureColor(node.count, selectedPeople)
+          : "hsl(217, 36%, 64%)",
+    };
+  });
 }

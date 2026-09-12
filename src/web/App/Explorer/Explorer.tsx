@@ -1,5 +1,5 @@
 import { Button, Progress } from "@mantine/core";
-import type { GraphData, Scan } from "../../../shared/contracts.js";
+import type { GraphData, MapMode, Scan } from "../../../shared/contracts.js";
 import { LogoMark } from "../LogoMark/LogoMark.js";
 import styles from "./Explorer.module.css";
 import { GraphCanvas } from "./GraphCanvas/GraphCanvas.js";
@@ -14,6 +14,7 @@ interface Props {
   onFocus: (id: string | null) => void;
   demo: boolean;
   scan: Scan | null;
+  mode: MapMode;
 }
 /** Frames the graph with coverage metrics and scan progress rather than claiming complete membership knowledge. */
 export function Explorer({
@@ -25,6 +26,7 @@ export function Explorer({
   onFocus,
   demo,
   scan,
+  mode,
 }: Props) {
   const people = graph.nodes.filter((node) => node.kind === "person").length;
   const groups = graph.nodes.length - people;
@@ -40,20 +42,32 @@ export function Explorer({
     <section className={styles.explorer}>
       <div className={styles.heading}>
         <div>
-          <h1 className={styles.headingTitle}>Your shared communities</h1>
+          <h1 className={styles.headingTitle}>
+            {mode === "people" ? "Your shared communities" : "People across communities"}
+          </h1>
         </div>
-        <span className={styles.badge}>{demo ? "SAMPLE MAP" : "PERSON ↔ GROUP"}</span>
+        <span className={styles.badge}>
+          {demo
+            ? "SAMPLE MAP"
+            : mode === "people"
+              ? "PEOPLE → COMMUNITIES"
+              : "COMMUNITIES → PEOPLE"}
+        </span>
       </div>
       <div className={styles.metrics}>
         <div className={styles.metric}>
           <strong className={styles.metricValue}>{people}</strong>
-          <span className={styles.metricLabel}>People on map</span>
+          <span className={styles.metricLabel}>
+            {mode === "people" ? "People selected" : "Observed people"}
+          </span>
         </div>
         <div className={styles.metric}>
           <strong className={styles.metricValue}>
             {groups || selectionComplete ? groups : "—"}
           </strong>
-          <span className={styles.metricLabel}>Shared communities</span>
+          <span className={styles.metricLabel}>
+            {mode === "people" ? "Shared communities" : "Communities selected"}
+          </span>
         </div>
         <div className={styles.metric}>
           <strong className={styles.metricValue}>
@@ -89,15 +103,23 @@ export function Explorer({
       )}
       <GraphFilter
         enabled={intersectionsOnly}
-        disabled={people < 2}
-        visible={visibleGraph.nodes.length - people}
-        total={groups}
+        disabled={(mode === "people" ? people : groups) < 2}
+        visible={
+          mode === "people"
+            ? visibleGraph.nodes.length - people
+            : visibleGraph.nodes.filter((node) => node.kind === "person").length
+        }
+        total={mode === "people" ? groups : people}
+        mode={mode}
         onChange={onIntersectionsChange}
       />
-      {groups > 0 && visibleGraph.nodes.length === people && (
+      {(mode === "people"
+        ? groups > 0 && visibleGraph.nodes.length === people
+        : people > 0 && visibleGraph.nodes.length === groups) && (
         <p className={styles.scanHint}>
-          No observed groups connect two selected people. Turn off Only intersections to see all
-          groups.
+          {mode === "people"
+            ? "No observed groups connect two selected people. Turn off Only intersections to see all groups."
+            : "No observed people connect two selected communities. Turn off Only intersections to see all people."}
         </p>
       )}
       <div className={styles.canvas}>
@@ -108,12 +130,14 @@ export function Explorer({
           <span className={styles.temperatureScale} />
           Communities · cool = fewer, warm = more · number = selected people
         </div>
-        {!people && (
+        {!(mode === "people" ? people : groups) && (
           <div className={styles.empty}>
             <LogoMark className={styles.emptyIcon} />
             <h2 className={styles.emptyTitle}>Every connection has a context.</h2>
             <p className={styles.emptyText}>
-              Select people to discover shared groups in the background.
+              {mode === "people"
+                ? "Select people to discover shared groups in the background."
+                : "Select observed communities to compare their people."}
               <br />
               Your map will grow here, one connection at a time.
             </p>
