@@ -20,7 +20,8 @@ Updated: 2026-09-13. Checkboxes describe verified outcomes, not merely intended 
 - [x] Trigger common-group scans from selection and allow the active durable queue to expand.
 - [x] Enforce a configurable simultaneous people-selection limit, defaulting to 50.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
-- [x] Add recent-activity and A–Z people sorting with an independent selected-first option.
+- [x] Add recent-activity/discovery, A–Z, and descending observed-connection sorting in both map
+  modes, with an independent selected-first option.
 - [x] Limit browser polling to active login and scan work, with command and tab-return refreshes.
 - [x] Add README setup, configuration, launch, debug, and hosting instructions.
 - [x] Remove the discontinued Pinokio packaging and launcher integration.

@@ -25,7 +25,7 @@ function repository(): Repository {
   ]);
   return repo;
 }
-test("paginates, deduplicates memberships, and preserves the completed snapshot on failed refresh", async () => {
+test("paginates, preserves completed data, and clears a recovered scan error", async () => {
   const repo = repository();
   let calls = 0;
   const scans = new ScanService(
@@ -61,6 +61,17 @@ test("paginates, deduplicates memberships, and preserves the completed snapshot 
   assert.equal(repo.scan()?.people[0]?.status, "failed");
   assert.equal(repo.completedScan()?.id, prior);
   assert.equal(JSON.stringify(repo.scan()).includes("private provider payload"), false);
+  const recovered = new ScanService(
+    repo,
+    {
+      commonGroups: async () => ({ groups: [{ id: "chat:1", title: "X" }], nextCursor: null }),
+    },
+    0,
+  );
+  recovered.resume();
+  await recovered.settled();
+  assert.equal(repo.scan()?.people[0]?.status, "completed");
+  assert.equal(repo.scan()?.people[0]?.error, null);
   repo.close();
 });
 test("flood wait cancellation retains a retry checkpoint and resume finishes without inventing empty results", async () => {

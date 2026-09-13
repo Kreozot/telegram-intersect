@@ -39,7 +39,9 @@ No message attachments or animated avatars are downloaded. Contact phone numbers
 - Dialog normalization reduces identities, returned order, and cursor metadata, clearing messages even on failure.
 - Repository writes enumerate allowed fields.
 - Public catalog responses exclude access hashes.
-- Fastify request logging is disabled. Unexpected errors use generic messages.
+- Fastify request logging is disabled. Unexpected browser errors use generic messages. Failed
+  common-group requests write only a sanitized error class and machine-readable code to the server
+  diagnostic log, without person identifiers, requests, raw responses, or arbitrary messages.
 - Demo mode never imports synthetic data into the owner's database.
 
 Tests inject sentinel message/phone values and assert that normalized and stored data exclude them. Tests also prove update recovery cannot make RPCs. These are software checks, not a packet capture of a live Telegram account.

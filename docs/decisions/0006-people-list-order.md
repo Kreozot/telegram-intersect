@@ -4,12 +4,14 @@ Date: 2026-09-11. Status: ACCEPTED — requested by the owner.
 
 ## Decision
 
-Offer two people-list orders: recent dialog activity from newest to oldest and alphabetical A–Z.
+Offer three list orders in both map modes: recent/discovery order, alphabetical A–Z, and the number
+of observed shared entities from highest to lowest. The latter means observed common groups for a
+person and observed people from the enabled sources for a community.
 Recent activity uses the ordinal position already returned by the paginated Telegram dialog catalog;
 it does not issue per-person requests or retain a message timestamp. People without a dialog position
 follow positioned dialog identities and are ordered A–Z among themselves.
 
-Provide Selected first as an independent option applied before either base order. Filtering and bulk
+Provide Selected first as an independent option applied before any base order. Filtering and bulk
 selection operate on the resulting visible order. Selection-driven reordering preserves the list's
 scroll offset, while stable keyed and memoized rows avoid recreating unchanged row DOM.
 

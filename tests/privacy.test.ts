@@ -2,10 +2,25 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import bigInt from "big-integer";
 import { Api } from "teleproto";
+import { safeErrorDetails } from "../src/server/safe-error-details.js";
 import { Repository } from "../src/server/storage/repository.js";
 import { seal, unseal } from "../src/server/storage/vault.js";
 import { normalizeDialogs, normalizePerson } from "../src/server/telegram/normalize.js";
 import { assertAllowedRequest, PrivacyClient } from "../src/server/telegram/privacy-client.js";
+
+test("retains useful error codes without exposing arbitrary provider messages", () => {
+  const rpcError = Object.assign(new Error("request included private provider payload"), {
+    name: "BadRequestError",
+    code: 400,
+    errorMessage: "USER_ID_INVALID",
+  });
+  assert.deepEqual(safeErrorDetails(rpcError), {
+    name: "BadRequestError",
+    code: 400,
+    message: "USER_ID_INVALID",
+  });
+  assert.deepEqual(safeErrorDetails(new Error("private provider payload")), { name: "Error" });
+});
 
 test("normalizes people without phone, photo, message content, or unsafe numeric IDs", () => {
   const user = new Api.User({

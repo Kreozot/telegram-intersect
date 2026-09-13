@@ -99,28 +99,43 @@ test("inverts observed memberships when communities are selected", () => {
   assert.equal(graph.edges.length, 3);
 });
 
-test("sorts communities by discovery or title with independent selected priority", () => {
+test("sorts communities by discovery, title, or common people with selected priority", () => {
   const communities = [
     { id: "chat:2", title: "Zulu" },
     { id: "chat:1", title: "Alpha" },
   ];
   assert.deepEqual(
-    sortCommunities(communities, "recent", false, new Set()).map((group) => group.id),
+    sortCommunities(communities, "recent", false, new Set(), new Map()).map((group) => group.id),
     ["chat:2", "chat:1"],
   );
   assert.deepEqual(
-    sortCommunities(communities, "alphabetical", false, new Set()).map((group) => group.id),
+    sortCommunities(communities, "alphabetical", false, new Set(), new Map()).map(
+      (group) => group.id,
+    ),
     ["chat:1", "chat:2"],
   );
   assert.deepEqual(
-    sortCommunities(communities, "alphabetical", true, new Set(["chat:2"])).map(
+    sortCommunities(communities, "alphabetical", true, new Set(["chat:2"]), new Map()).map(
       (group) => group.id,
     ),
     ["chat:2", "chat:1"],
   );
+  assert.deepEqual(
+    sortCommunities(
+      communities,
+      "common",
+      false,
+      new Set(),
+      new Map([
+        ["chat:1", 4],
+        ["chat:2", 1],
+      ]),
+    ).map((group) => group.id),
+    ["chat:1", "chat:2"],
+  );
 });
 
-test("sorts people by dialog activity or name with independent selected priority", () => {
+test("sorts people by dialog activity, name, or common groups with selected priority", () => {
   const people: Person[] = [
     { id: "user:1", name: "Charlie", username: null, sources: ["contacts"] },
     {
@@ -139,15 +154,29 @@ test("sorts people by dialog activity or name with independent selected priority
     },
   ];
   assert.deepEqual(
-    sortPeople(people, "recent", false, new Set()).map((person) => person.name),
+    sortPeople(people, "recent", false, new Set(), new Map()).map((person) => person.name),
     ["Alice", "Bob", "Charlie"],
   );
   assert.deepEqual(
-    sortPeople(people, "alphabetical", false, new Set()).map((person) => person.name),
+    sortPeople(people, "alphabetical", false, new Set(), new Map()).map((person) => person.name),
     ["Alice", "Bob", "Charlie"],
   );
   assert.deepEqual(
-    sortPeople(people, "recent", true, new Set(["user:1"])).map((person) => person.name),
+    sortPeople(people, "recent", true, new Set(["user:1"]), new Map()).map((person) => person.name),
+    ["Charlie", "Alice", "Bob"],
+  );
+  assert.deepEqual(
+    sortPeople(
+      people,
+      "common",
+      false,
+      new Set(),
+      new Map([
+        ["user:1", 3],
+        ["user:2", 1],
+        ["user:3", 2],
+      ]),
+    ).map((person) => person.name),
     ["Charlie", "Alice", "Bob"],
   );
 });

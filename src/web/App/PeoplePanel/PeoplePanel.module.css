@@ -57,7 +57,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding-top: 12px;
 }
 

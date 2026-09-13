@@ -53,6 +53,22 @@ export function PeoplePanel({
   const [selectedFirst, setSelectedFirst] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const pendingScrollTop = useRef<number | null>(null);
+  const commonGroupCounts = new Map(
+    (scan?.people ?? []).map((entry) => [
+      entry.personId,
+      new Set(entry.groups.map((group) => group.id)).size,
+    ]),
+  );
+  const commonPeopleCounts = new Map<string, number>();
+  for (const person of people) {
+    if (!person.sources.some((source) => enabledSources.has(source))) continue;
+    const groupIds = new Set(
+      scan?.people.find((entry) => entry.personId === person.id)?.groups.map((group) => group.id),
+    );
+    for (const groupId of groupIds) {
+      commonPeopleCounts.set(groupId, (commonPeopleCounts.get(groupId) ?? 0) + 1);
+    }
+  }
   const filtered = sortPeople(
     people.filter(
       (person) =>
@@ -62,17 +78,22 @@ export function PeoplePanel({
     sort,
     selectedFirst,
     selected,
+    commonGroupCounts,
   );
-  const allSelected = filtered.length > 0 && filtered.every((person) => selected.has(person.id));
+  const selectablePeople = filtered.slice(0, maxSelectedPeople);
+  const allSelected =
+    selectablePeople.length > 0 && selectablePeople.every((person) => selected.has(person.id));
   const filteredCommunities = sortCommunities(
     communities.filter((community) => community.title.toLowerCase().includes(query.toLowerCase())),
     sort,
     selectedFirst,
     selectedCommunities,
+    commonPeopleCounts,
   );
+  const selectableCommunities = filteredCommunities.slice(0, maxSelectedPeople);
   const allCommunitiesSelected =
-    filteredCommunities.length > 0 &&
-    filteredCommunities.every((community) => selectedCommunities.has(community.id));
+    selectableCommunities.length > 0 &&
+    selectableCommunities.every((community) => selectedCommunities.has(community.id));
   useLayoutEffect(() => {
     if (pendingScrollTop.current === null || !listRef.current) return;
     listRef.current.scrollTop = pendingScrollTop.current;
@@ -90,7 +111,7 @@ export function PeoplePanel({
     },
     [onToggle, preserveSelectionScroll],
   );
-  /** Selects or clears only currently visible people, leaving other filters' selections intact. */
+  /** Selects the visible limit-sized batch or clears it when that whole batch is selected. */
   function selectVisible(): void {
     preserveSelectionScroll();
     const next = new Set(selected);
@@ -98,16 +119,16 @@ export function PeoplePanel({
       onSelect(
         limitSelection(
           next,
-          filtered.map((item) => item.id),
+          selectablePeople.map((item) => item.id),
           maxSelectedPeople,
         ),
       );
       return;
     }
-    for (const person of filtered) next.delete(person.id);
+    for (const person of selectablePeople) next.delete(person.id);
     onSelect(next);
   }
-  /** Selects or clears visible communities without changing the people-mode selection. */
+  /** Selects the visible limit-sized community batch or clears it when fully selected. */
   function selectVisibleCommunities(): void {
     preserveSelectionScroll();
     const next = new Set(selectedCommunities);
@@ -115,13 +136,13 @@ export function PeoplePanel({
       onSelectCommunities(
         limitSelection(
           next,
-          filteredCommunities.map((community) => community.id),
+          selectableCommunities.map((community) => community.id),
           maxSelectedPeople,
         ),
       );
       return;
     }
-    for (const community of filteredCommunities) next.delete(community.id);
+    for (const community of selectableCommunities) next.delete(community.id);
     onSelectCommunities(next);
   }
   return (
@@ -173,10 +194,13 @@ export function PeoplePanel({
           data={[
             { value: "recent", label: "Recent" },
             { value: "alphabetical", label: "A–Z" },
+            { value: "common", label: "Common" },
           ]}
           value={sort}
           onChange={(value) => {
-            if (value === "recent" || value === "alphabetical") setSort(value);
+            if (value === "recent" || value === "alphabetical" || value === "common") {
+              setSort(value);
+            }
           }}
         />
         <Checkbox
@@ -190,13 +214,21 @@ export function PeoplePanel({
       <div className={styles.selection}>
         <Checkbox
           size="xs"
-          label="Select visible"
+          label={
+            mode === "people"
+              ? filtered.length > maxSelectedPeople
+                ? `Select first ${maxSelectedPeople}`
+                : `Select all ${filtered.length}`
+              : filteredCommunities.length > maxSelectedPeople
+                ? `Select first ${maxSelectedPeople}`
+                : `Select all ${filteredCommunities.length}`
+          }
           checked={mode === "people" ? allSelected : allCommunitiesSelected}
           indeterminate={
             mode === "people"
-              ? !allSelected && filtered.some((p) => selected.has(p.id))
+              ? !allSelected && selectablePeople.some((p) => selected.has(p.id))
               : !allCommunitiesSelected &&
-                filteredCommunities.some((group) => selectedCommunities.has(group.id))
+                selectableCommunities.some((group) => selectedCommunities.has(group.id))
           }
           onChange={mode === "people" ? selectVisible : selectVisibleCommunities}
         />

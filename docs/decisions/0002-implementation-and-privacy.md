@@ -17,6 +17,11 @@ No message history requests, message search, media download, message sending, re
 
 Telegram's getDialogs response unavoidably includes top-message objects. The owner explicitly approved incidental receipt and immediate discard. Contact discovery avoids getDialogs; dialog discovery strips content in the adapter, keeps only cursor metadata in memory, and never serializes raw responses. The application must not falsely advertise zero message bytes received when dialog discovery is enabled.
 
+The owner approved server-side diagnostic logging for failed common-group requests on 2026-09-13.
+Logs retain only the error class plus numeric or uppercase machine-readable Telegram error codes. They
+never serialize the SDK error object, request, person identifier, access hash, or arbitrary provider
+message. The browser and stored scan continue to receive only the generic safe error.
+
 The owner approved teleproto after npm reported GramJS as archived. The SDK's update manager is disabled and RPCs are allowlisted. This replaces the original recommendation without changing the rest of the approved stack.
 
 ## Pinokio verification checklist

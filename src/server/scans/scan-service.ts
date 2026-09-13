@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Scan } from "../../shared/contracts.js";
 import { RequestError } from "../request-error.js";
+import { safeErrorDetails } from "../safe-error-details.js";
 import type { Repository } from "../storage/repository.js";
 import { RateLimitError, type TelegramGateway } from "../telegram/gateway.js";
 
@@ -175,6 +176,7 @@ export class ScanService {
             const groups = new Map(result.groups.map((group) => [group.id, group]));
             for (const group of page.groups) groups.set(group.id, group);
             result.groups = [...groups.values()];
+            result.error = null;
             result.observedAt = new Date().toISOString();
             if (page.nextCursor === null) result.status = "completed";
             else if (page.nextCursor === result.cursor)
@@ -188,6 +190,7 @@ export class ScanService {
               result.retryAt = Date.now() + error.seconds * 1000;
               this.repo.saveScan(scan);
             } else {
+              console.error("Common-group scan failed.", safeErrorDetails(error));
               result.status = "failed";
               result.error = "Could not finish this person. Resume to retry.";
               this.repo.saveScan(scan);
