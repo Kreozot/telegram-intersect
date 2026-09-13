@@ -60,11 +60,16 @@ From this repository:
 
 ```sh
 npm ci
+npm run init
 npm run build
 npm start
 ```
 
 Open [http://127.0.0.1:4310](http://127.0.0.1:4310). One server serves both the UI and API. Without Telegram credentials you can immediately choose **Explore demo**.
+
+`npm run init` explains where to create Telegram application credentials, asks only for missing
+values, and saves them in the ignored `.env` file. You can skip it when you only want the synthetic
+demo.
 
 Local loopback access is authorized automatically, so opening the application on this computer does
 not require an access key. Host and origin checks still reject requests addressed through unrelated
@@ -73,12 +78,12 @@ ACL.
 
 ### Connect Telegram
 
-1. Create your own Telegram application at [my.telegram.org/apps](https://my.telegram.org/apps) to obtain `api_id` and `api_hash`. These are user-client credentials, not a bot token.
-2. Copy `.env.example` to `.env`.
-3. Fill in `TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, then restart the server.
-4. Sign in with QR or phone/code. For QR, use Telegram → Settings → Devices → Link Desktop Device.
-5. Load contacts, dialog identities, or both. Choose a source tab, search if needed, and use **Select visible** or individual checkboxes.
-6. Shared-group counts are checked asynchronously after loading a source; select people and the map
+1. Run `npm run init` and follow the prompts. The helper links to Telegram's application page and
+   creates `.env` from `.env.example` when needed without replacing an existing file or credentials.
+2. Restart the server, then sign in with QR or phone/code. For QR, use Telegram → Settings → Devices
+   → Link Desktop Device.
+3. Load contacts, dialog identities, or both. Choose a source tab, search if needed, and use **Select visible** or individual checkboxes.
+4. Shared-group counts are checked asynchronously after loading a source; select people and the map
    grows as results arrive.
    Select a community or graph node to inspect connections.
 
@@ -124,9 +129,8 @@ docker compose up --build -d
 
 Open [http://127.0.0.1:4310](http://127.0.0.1:4310). The application is published only on the host's
 loopback interface, and its private database and generated session key are kept in the
-`intersect-data` named volume. To connect Telegram, copy `.env.example` to `.env`, fill in
-`TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, and recreate the service. Set `INTERSECT_PORT` in `.env`
-to use a different host port.
+`intersect-data` named volume. To connect Telegram, run `npm run init` on the host and recreate the
+service. Set `INTERSECT_PORT` in `.env` to use a different host port.
 
 ```sh
 docker compose down
@@ -216,6 +220,7 @@ The owner has confirmed QR login with two-step verification and contact loading.
 - [Selection-triggered scan decision](docs/decisions/0004-selection-triggered-scans.md)
 - [Catalog-triggered count decision](docs/decisions/0013-catalog-triggered-counts.md)
 - [Adaptive scan and SSE decision](docs/decisions/0014-adaptive-scan-and-sse.md)
+- [Interactive setup decision](docs/decisions/0015-interactive-environment-setup.md)
 - [Configurable selection-limit decision](docs/decisions/0005-selection-limit.md)
 - [Coding practices](docs/coding-practices.md)
 - [Code style](docs/code-style.md)

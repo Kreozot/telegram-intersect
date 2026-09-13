@@ -8,6 +8,7 @@ React, Vite, Mantine, CSS Modules, Cytoscape.js, Node.js 24, Fastify, and SQLite
 
 The repository root contains the application package and project documentation:
 
+- scripts: local setup orchestration and testable `.env` transformations.
 - src/web: browser UI, selection state, graph adapter, and private component subtrees.
 - src/shared: typed domain contracts and pure graph/identity transformations.
 - src/server/http: schema-validated API and HTTP composition.
@@ -17,6 +18,10 @@ The repository root contains the application package and project documentation:
 - src/server/storage: SQLite records and authenticated session encryption.
 
 No Telegram credential or access hash enters browser contracts. Components private to a parent are nested beside it; styles are colocated. Only shared contracts and pure transformations cross browser/server boundaries.
+
+The local `npm run init` command uses Inquirer to explain Telegram application registration and
+collect only missing credentials. It creates `.env` exclusively from `.env.example`, preserves an
+existing file and unrelated settings, masks the API hash prompt, and never prints either secret.
 
 ## Data flow
 

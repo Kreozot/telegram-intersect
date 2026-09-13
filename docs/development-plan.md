@@ -30,6 +30,7 @@ Updated: 2026-09-13. Checkboxes describe verified outcomes, not merely intended 
   modes, with an independent selected-first option.
 - [x] Limit browser polling to active login and scan work, with command and tab-return refreshes.
 - [x] Add README setup, configuration, launch, debug, and hosting instructions.
+- [x] Add an interactive local initializer that preserves existing `.env` settings and credentials.
 - [x] Remove the discontinued Pinokio packaging and launcher integration.
 - [x] Build and start the production application locally.
 - [x] Verify synthetic graph/details and light/dark rendering in a browser.
