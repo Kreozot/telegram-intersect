@@ -161,7 +161,7 @@ export function PeoplePanel({
               size="xs"
               label={source === "contacts" ? "Contacts" : "Dialogs"}
               checked={enabledSources.has(source)}
-              disabled={busy || (scan?.running ?? false)}
+              disabled={busy}
               onChange={(event) => {
                 void onSourceChange(source, event.currentTarget.checked);
               }}
@@ -310,7 +310,7 @@ export function PeoplePanel({
         <ScanActions scan={scan} demo={demo} onCancel={onCancel} onResume={onResume} />
         <p className={styles.bottomNote}>
           {mode === "people"
-            ? "Selecting people checks their shared groups in the background."
+            ? "Loading a source checks shared-group counts in the background; selections are prioritized by visibility only."
             : "Selected communities are compared through already observed people from enabled sources."}
         </p>
       </div>

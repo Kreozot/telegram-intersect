@@ -36,7 +36,8 @@ Select a community to focus its graph connections and see every selected person 
 - Cache-first community avatars shown in the community lens and always visible in the graph.
 - Cytoscape graph with neighborhood highlighting, zoom, fit, community counts, and a keyboard-accessible details panel.
 - Light and dark themes, plus a clearly labeled synthetic demo requiring no account.
-- Sequential scans with pagination, Telegram flood waits, cancellation, checkpoints, and resume after a restart.
+- Adaptive concurrent scans with pagination, Telegram flood waits, cancellation, checkpoints, and
+  resume after a restart.
 - Local SQLite metadata storage and encrypted Telegram authorization sessions.
 - Automatic owner access on loopback and access-key protection for hosted installations.
 
@@ -76,10 +77,16 @@ ACL.
 3. Fill in `TELEGRAM_API_ID` and `TELEGRAM_API_HASH`, then restart the server.
 4. Sign in with QR or phone/code. For QR, use Telegram → Settings → Devices → Link Desktop Device.
 5. Load contacts, dialog identities, or both. Choose a source tab, search if needed, and use **Select visible** or individual checkboxes.
-6. Select people; their shared groups are checked asynchronously and the map grows as results arrive.
+6. Shared-group counts are checked asynchronously after loading a source; select people and the map
+   grows as results arrive.
    Select a community or graph node to inspect connections.
 
-Loading contacts alone does not query groups. Selecting people adds them to a sequential background scan after a short debounce. Until observations arrive, community/connection counts show **—** (unknown). A zero is only confirmed after every selected person has completed scanning; partial scans may already show observed connections. Completed observations are reused when a person is selected again.
+Loading contacts or dialogs adds those people to a sequential background scan after the catalog is
+available, without delaying the catalog response. Selecting people can also add them to the same
+queue. Reopening an authorized workspace resumes missing counts for the saved catalog without a
+source reload. Until observations arrive, community/connection counts show **—** (unknown). A zero is
+only confirmed after every selected person has completed scanning; partial scans may already show
+observed connections. Completed observations are reused.
 
 For two or more selected people, **Only intersections** initially shows groups observed for at least two of them. Turn it off to include groups observed for just one selected person. The displayed/total counter explains this filter; summary metrics always describe the full selection. People and groups appear as circular avatars, with group-border color indicating the observed selected-person count. Group markers enlarge slightly on hover or selection and show their names there; selecting a person highlights their connections. Full titles remain available in the details panel.
 
@@ -206,6 +213,8 @@ The owner has confirmed QR login with two-step verification and contact loading.
 - [Technology decisions](docs/decisions/0001-stack-proposal.md)
 - [Implementation and privacy decisions](docs/decisions/0002-implementation-and-privacy.md)
 - [Selection-triggered scan decision](docs/decisions/0004-selection-triggered-scans.md)
+- [Catalog-triggered count decision](docs/decisions/0013-catalog-triggered-counts.md)
+- [Adaptive scan and SSE decision](docs/decisions/0014-adaptive-scan-and-sse.md)
 - [Configurable selection-limit decision](docs/decisions/0005-selection-limit.md)
 - [Coding practices](docs/coding-practices.md)
 - [Code style](docs/code-style.md)

@@ -4,18 +4,23 @@ import { RequestError } from "../request-error.js";
 import { safeErrorDetails } from "../safe-error-details.js";
 import type { Repository } from "../storage/repository.js";
 import { RateLimitError, type TelegramGateway } from "../telegram/gateway.js";
+import type { WorkspaceEvents } from "../workspace-events.js";
 
-/** Runs one durable, sequential membership scan without coupling HTTP requests to Telegram latency. */
+/** Runs one durable, adaptively concurrent scan without coupling HTTP requests to Telegram latency. */
 export class ScanService {
   private active: Promise<void> | null = null;
   private current: Scan | null = null;
   private cancelled = false;
-  private wake: (() => void) | null = null;
+  private readonly wake = new Set<() => void>();
+  private concurrency = 3;
+  private successfulRequests = 0;
+  private globalRetryAt = 0;
   /** Marks interrupted work as resumable when the process restarts. */
   constructor(
     private readonly repo: Repository,
     private readonly gateway: TelegramGateway,
-    private readonly interval = 1200,
+    private readonly interval = 200,
+    private readonly events?: WorkspaceEvents,
   ) {
     const scan = repo.scan();
     if (scan?.running) {
@@ -113,7 +118,8 @@ export class ScanService {
   /** Requests cancellation, wakes any rate-limit sleep, and waits for the current request to settle. */
   async cancel(): Promise<void> {
     this.cancelled = true;
-    this.wake?.();
+    for (const wake of this.wake) wake();
+    this.wake.clear();
     await this.active;
   }
   /** Exposes the actual worker lifetime to shutdown and behavior tests. */
@@ -142,69 +148,116 @@ export class ScanService {
     await new Promise<void>((resolve) => {
       const finish = () => {
         clearTimeout(timer);
-        this.wake = null;
+        this.wake.delete(finish);
         resolve();
       };
       const timer = setTimeout(finish, Math.min(ms, 2_147_000_000));
-      this.wake = finish;
+      this.wake.add(finish);
     });
   }
-  /** Paginates each selected person's shared groups and commits checkpoints after every successful page. */
-  private async run(scan: Scan): Promise<void> {
-    try {
-      for (const result of scan.people) {
-        if (result.status === "completed") continue;
-        const person = this.repo.storedPeople().find((entry) => entry.id === result.personId);
-        if (!person) {
-          result.status = "failed";
-          result.error = "Person is no longer in the catalog.";
-          continue;
-        }
-        while (!this.cancelled && result.status !== "completed") {
-          if (result.retryAt && result.retryAt > Date.now()) {
-            result.status = "waiting";
-            this.repo.saveScan(scan);
-            await this.pause(result.retryAt - Date.now());
-            if (this.cancelled) break;
-            if (result.retryAt > Date.now()) continue;
-          }
-          result.status = "scanning";
-          result.retryAt = null;
-          this.repo.saveScan(scan);
-          try {
-            const page = await this.gateway.commonGroups(person, result.cursor);
-            const groups = new Map(result.groups.map((group) => [group.id, group]));
-            for (const group of page.groups) groups.set(group.id, group);
-            result.groups = [...groups.values()];
-            result.error = null;
-            result.observedAt = new Date().toISOString();
-            if (page.nextCursor === null) result.status = "completed";
-            else if (page.nextCursor === result.cursor)
-              throw new RequestError("Repeated page cursor.");
-            else result.cursor = page.nextCursor;
-            this.repo.saveScan(scan);
-            await this.pause(this.interval);
-          } catch (error) {
-            if (error instanceof RateLimitError) {
-              result.status = "waiting";
-              result.retryAt = Date.now() + error.seconds * 1000;
-              this.repo.saveScan(scan);
-            } else {
-              console.error("Common-group scan failed.", safeErrorDetails(error));
-              result.status = "failed";
-              result.error = "Could not finish this person. Resume to retry.";
-              this.repo.saveScan(scan);
-              break;
-            }
-          }
-        }
+  /** Persists a scan transition and emits only the changed person or compact job state. */
+  private save(scan: Scan, person?: Scan["people"][number]): void {
+    this.repo.saveScan(scan);
+    if (person) {
+      const publicPerson = this.repo
+        .scan()
+        ?.people.find((entry) => entry.personId === person.personId);
+      this.events?.publish({
+        type: "scan-person",
+        scanId: scan.id,
+        createdAt: scan.createdAt,
+        person: structuredClone(publicPerson ?? person),
+      });
+    } else
+      this.events?.publish({
+        type: "scan-state",
+        scanId: scan.id,
+        createdAt: scan.createdAt,
+        running: scan.running,
+      });
+  }
+  /** Processes one person's pages while sharing adaptive flood control with the worker pool. */
+  private async scanPerson(scan: Scan, result: Scan["people"][number]): Promise<void> {
+    const person = this.repo.storedPeople().find((entry) => entry.id === result.personId);
+    if (!person) {
+      result.status = "failed";
+      result.error = "Person is no longer in the catalog.";
+      this.save(scan, result);
+      return;
+    }
+    while (!this.cancelled && result.status !== "completed") {
+      const retryAt = Math.max(result.retryAt ?? 0, this.globalRetryAt);
+      if (retryAt > Date.now()) {
+        result.status = "waiting";
+        this.save(scan, result);
+        await this.pause(retryAt - Date.now());
         if (this.cancelled) break;
+        if (retryAt > Date.now()) continue;
       }
+      result.status = "scanning";
+      result.retryAt = null;
+      this.save(scan, result);
+      try {
+        const page = await this.gateway.commonGroups(person, result.cursor);
+        const groups = new Map(result.groups.map((group) => [group.id, group]));
+        for (const group of page.groups) groups.set(group.id, group);
+        result.groups = [...groups.values()];
+        result.error = null;
+        result.observedAt = new Date().toISOString();
+        if (page.nextCursor === null) result.status = "completed";
+        else if (page.nextCursor === result.cursor) throw new RequestError("Repeated page cursor.");
+        else result.cursor = page.nextCursor;
+        this.successfulRequests++;
+        if (this.concurrency < 3 && this.successfulRequests >= 10) {
+          this.concurrency++;
+          this.successfulRequests = 0;
+        }
+        this.save(scan, result);
+        await this.pause(this.interval > 0 ? this.interval + Math.floor(Math.random() * 150) : 0);
+      } catch (error) {
+        if (error instanceof RateLimitError) {
+          result.status = "waiting";
+          result.retryAt = Date.now() + error.seconds * 1000;
+          this.globalRetryAt = Math.max(this.globalRetryAt, result.retryAt);
+          this.concurrency = 1;
+          this.successfulRequests = 0;
+          this.save(scan, result);
+        } else {
+          console.error("Common-group scan failed.", safeErrorDetails(error));
+          result.status = "failed";
+          result.error = "Could not finish this person. Resume to retry.";
+          this.save(scan, result);
+          break;
+        }
+      }
+    }
+  }
+  /** Paginates people with a small adaptive pool and globally honors Telegram flood waits. */
+  private async run(scan: Scan): Promise<void> {
+    let nextIndex = 0;
+    const worker = async (slot: number): Promise<void> => {
+      while (!this.cancelled) {
+        while (!this.cancelled && slot >= this.concurrency) await this.pause(100);
+        if (this.cancelled) return;
+        const result = scan.people[nextIndex];
+        if (!result) return;
+        nextIndex++;
+        if (result.status === "completed") continue;
+        await this.scanPerson(scan, result);
+      }
+    };
+    try {
+      await Promise.all([0, 1, 2].map((slot) => worker(slot)));
     } finally {
+      const cancelledPeople: Scan["people"] = [];
       for (const person of scan.people)
-        if (["queued", "scanning", "waiting"].includes(person.status)) person.status = "cancelled";
+        if (["queued", "scanning", "waiting"].includes(person.status)) {
+          person.status = "cancelled";
+          cancelledPeople.push(person);
+        }
       scan.running = false;
-      this.repo.saveScan(scan);
+      for (const person of cancelledPeople) this.save(scan, person);
+      this.save(scan);
     }
   }
 }

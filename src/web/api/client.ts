@@ -15,7 +15,10 @@ export async function api<T>(path: string, method = "GET", body?: unknown): Prom
   const response = await fetch(`/api/${path}`, {
     method,
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json", "X-Intersect-Request": "1" },
+    headers: {
+      "X-Intersect-Request": "1",
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+    },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   const data: unknown = await response.json();

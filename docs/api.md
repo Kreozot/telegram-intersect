@@ -21,14 +21,20 @@ except for health/access checks and owner-key login. Every non-GET/HEAD API requ
 | POST | /api/people | Discover { "source": "contacts" } or { "source": "dialogs" } |
 | GET | /api/snapshot | Current people and scan; no access hashes |
 | GET | /api/snapshot/completed | Last complete scan with current catalog |
+| GET | /api/events | SSE stream of incremental scan and avatar updates |
 | POST | /api/scans | Add selected `{ "ids": ["user:123"] }` identities to the background queue |
+| POST | /api/scans/catalog | Add every persisted catalog identity to the background queue |
 | POST | /api/scans/cancel | Cancel after current request settles |
 | POST | /api/scans/resume | Resume unfinished entries and retry failures |
 | DELETE | /api/analysis | Remove analysis data, retaining Telegram authorization |
 
 The current catalog can change after a completed scan. A completed snapshot's person IDs may therefore include identities no longer in the current catalog. Each scan has per-person status, groups, and observation times. Only completed means that API pagination for that person finished; it does not guarantee universal membership visibility.
 
-While login or scanning is active, the browser polls /api/telegram and /api/snapshot with a 1.8-second interval. Idle workspaces do not poll. Commands and returning to a visible tab trigger one refresh. The browser checks /api/access when it first opens; hosted authenticated workspace requests use HTTP 401 to detect later session expiry. Catalog discovery stays within the POST request and preserves old data if it fails. Selection changes are debounced for 250 ms before posting the selected IDs. The endpoint reuses completed observations and may safely append newly selected people while the sequential worker is active.
+The browser loads `/api/snapshot` once and receives ongoing scan-person, scan-state, and avatar deltas
+from `/api/events` as Server-Sent Events. Only active login stages poll the small `/api/telegram`
+response at a 1.8-second interval. Commands and returning to a visible tab trigger one full refresh.
+Catalog discovery stays within its POST request and preserves old data if it fails. Selection changes
+are debounced for 250 ms before posting selected IDs. Completed observations are reused.
 
 ## JavaScript (inside the unlocked same-origin UI)
 

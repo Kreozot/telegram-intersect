@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ScanService } from "../src/server/scans/scan-service.js";
-import { Repository } from "../src/server/storage/repository.js";
+import { Repository, type StoredPerson } from "../src/server/storage/repository.js";
 import { RateLimitError } from "../src/server/telegram/gateway.js";
 
 /** Creates an isolated synthetic catalog for durable scan behavior tests. */
@@ -183,5 +183,44 @@ test("refreshes legacy completed groups once to discover avatar availability", a
   scans.enqueue(["user:1"]);
   await scans.settled();
   assert.equal(calls, 1);
+  repo.close();
+});
+
+test("scans up to three people concurrently", async () => {
+  const repo = repository();
+  repo.savePeople([
+    ...repo.storedPeople(),
+    ...[3, 4, 5, 6].map(
+      (id): StoredPerson => ({
+        id: `user:${id}`,
+        name: `Person ${id}`,
+        username: null,
+        sources: ["contacts"],
+        accessHash: String(id),
+      }),
+    ),
+  ]);
+  let active = 0;
+  let maximumActive = 0;
+  const scans = new ScanService(
+    repo,
+    {
+      commonGroups: async () => {
+        active++;
+        maximumActive = Math.max(maximumActive, active);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        active--;
+        return { groups: [], nextCursor: null };
+      },
+    },
+    0,
+  );
+  scans.start(repo.people().map((person) => person.id));
+  await scans.settled();
+  assert.equal(maximumActive, 3);
+  assert.equal(
+    repo.scan()?.people.every((person) => person.status === "completed"),
+    true,
+  );
   repo.close();
 });

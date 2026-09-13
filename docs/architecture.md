@@ -13,7 +13,7 @@ The repository root contains the application package and project documentation:
 - src/server/http: schema-validated API and HTTP composition.
 - src/server/security: browser access, expiring opaque sessions, host/origin checks.
 - src/server/telegram: authorization lifecycle, separate metadata retrieval, normalization, and privacy-constrained SDK.
-- src/server/scans: durable sequential scan scheduling and recovery.
+- src/server/scans: durable adaptive scan scheduling and recovery.
 - src/server/storage: SQLite records and authenticated session encryption.
 
 No Telegram credential or access hash enters browser contracts. Components private to a parent are nested beside it; styles are colocated. Only shared contracts and pure transformations cross browser/server boundaries.
@@ -27,12 +27,17 @@ No Telegram credential or access hash enters browser contracts. Components priva
    Dialog discovery also retains each private dialog's ordinal catalog position for recent-activity
    sorting, without retaining its message timestamp or content.
    After commit, AvatarService sequentially refreshes small static profile images in the background.
-4. Browser selection changes asynchronously enqueue newly selected people after a short debounce.
+4. A completed Contacts or Dialogs load asynchronously enqueues everyone in that source. Opening an
+   authorized workspace also enqueues the persisted catalog once, so missing counts resume after a
+   page reload. Browser selection changes can enqueue newly selected people after a short debounce.
    ScanService expands the current durable queue, reuses completed observations, and queries common
-   groups sequentially through the metadata gateway while saving each page checkpoint.
-5. The browser polls normalized login and snapshot state only while login or scanning is active. User
-   commands and tab visibility restoration trigger one refresh; idle workspaces do not poll. The
-   browser derives selected-person counts and graph edges locally.
+   groups through an adaptive three-worker pool while saving each page checkpoint. A flood wait pauses
+   the whole pool, reduces new work to one worker, and allows gradual recovery. Loading another
+   source pauses and resumes unfinished scan work so catalog and common-group requests do not overlap.
+5. The browser loads one normalized snapshot, then receives person-scan and avatar deltas over a
+   same-origin SSE connection. Only the short-lived login flow retains a small status poll. User
+   commands and tab visibility restoration trigger one full refresh. The browser derives
+   selected-person counts and graph edges locally.
 6. Browser-local source preferences filter the identity catalog. The graph adapter can project the
    same observed bipartite edges from selected people to communities or from selected communities to
    people; no participant-list request is introduced by the inverted projection.
@@ -65,9 +70,9 @@ validated and saved.
 
 Each page is persisted atomically. Completed snapshots remain separate from in-progress refreshes. Cancelled or failed scans retain observed edges and checkpoints; they never become authoritative empty results. Restart marks interrupted jobs as cancelled for explicit resume. Rate-limit retry times are retained across restart. The graph shown by default is the current scan; the previous completed snapshot is available through the API.
 
-The current scan can expand while its worker is active. Selection removal is a browser graph concern:
-it neither deletes cached observations nor cancels a provider request already in progress. The worker
-remains sequential, including when a bulk selection appends many people.
+The current scan can expand while its workers are active. Selection removal is a browser graph concern:
+it neither deletes cached observations nor cancels a provider request already in progress. The pool
+starts at three workers, falls back to one after a global flood wait, and gradually returns to three.
 The server publishes and enforces the `MAX_SELECTED_PEOPLE` boundary; the browser applies the same
 limit to individual and bulk selection before enqueueing a scan.
 

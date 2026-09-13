@@ -18,8 +18,8 @@
 ## Approved first-release scope
 
 - One owner and one connected Telegram account per deployment. Hosted access still requires an application authentication boundary. Multi-user hosting requires a separate approved design.
-- Source selection, search, deduplication, selection-triggered background scans, scan progress,
-  cancellation, partial-result recovery, and refresh.
+- Source selection, search, deduplication, catalog- and selection-triggered background scans, scan
+  progress, cancellation, partial-result recovery, and refresh.
 - A configurable simultaneous people-selection limit, defaulting to 50.
 - Static profile avatars loaded in the background with local cache-first display and initials fallback.
 - Static community avatars loaded from observed common chats with the same private cache-first model,
@@ -41,9 +41,11 @@ The owner explicitly approved immediately discarding incidental top messages ret
 
 Each person needs a distinct result status: not scanned, queued, scanning, completed, waiting, failed, or cancelled. Store scan timestamps and completeness. A failed or unfinished request must never mean zero shared groups. Counts describe selected people with observed memberships, not total group membership. Never infer a negative membership from missing partial results.
 
-Selecting people adds them to a durable sequential common-group queue after a short debounce.
-Previously completed observations are reused, and removing a person affects graph visibility without
-discarding saved results or interrupting an in-flight request.
+Loading Contacts or Dialogs adds every person in that source to a durable adaptive common-group
+queue after the catalog response completes. Selecting people can also expand that queue after a short
+debounce. Opening an authorized workspace queues missing persisted-catalog observations without
+requiring a source reload. Previously completed observations are reused, and removing a person affects
+graph visibility without discarding saved results or interrupting an in-flight request.
 
 ## Acceptance examples
 

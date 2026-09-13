@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
-import type { AppStatus, PersonSource, Snapshot, TelegramStatus } from "../../shared/contracts.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type {
+  AppStatus,
+  PersonSource,
+  Snapshot,
+  TelegramStatus,
+  WorkspaceEvent,
+} from "../../shared/contracts.js";
 import { limitSelection, toggleSelection } from "../../shared/selection.js";
 import { ApiError, api } from "../api/client.js";
 import { demoSnapshot } from "../demo.js";
@@ -44,14 +50,11 @@ export function useWorkspace() {
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const pollingRequired = shouldPollWorkspace(
-    authenticated,
-    telegram.stage,
-    snapshot.scan,
-    snapshot.avatarLoading,
-  );
+  const catalogCountsRequested = useRef(false);
+  const pollingRequired = shouldPollWorkspace(authenticated, telegram.stage);
   /** Clears protected browser state after locking, expiry, or an unauthorized API response. */
   const clearWorkspace = useCallback(() => {
+    catalogCountsRequested.current = false;
     setAuthenticated(false);
     setSnapshot({ people: [], scan: null, avatarLoading: false });
     setTelegram({ stage: "idle", qr: null, error: null, configured: false });
@@ -105,7 +108,7 @@ export function useWorkspace() {
     /** Polls after each prior refresh settles so slow responses never overlap. */
     async function poll(): Promise<void> {
       try {
-        await refreshWorkspace();
+        setTelegram(await api<TelegramStatus>("telegram"));
       } catch (failure) {
         if (!disposed) setError(failure instanceof Error ? failure.message : "Connection failed.");
       }
@@ -116,7 +119,94 @@ export function useWorkspace() {
       disposed = true;
       clearTimeout(timer);
     };
-  }, [demo, pollingRequired, refreshWorkspace]);
+  }, [demo, pollingRequired]);
+
+  useEffect(() => {
+    if (demo || !authenticated) return;
+    const source = new EventSource("/api/events", { withCredentials: true });
+    /** Applies one server delta without retransmitting unchanged catalog and scan records. */
+    function applyWorkspaceEvent(message: MessageEvent<string>): void {
+      const event = JSON.parse(message.data) as WorkspaceEvent;
+      if (event.type === "resync") {
+        void refreshWorkspace();
+        return;
+      }
+      setSnapshot((current) => {
+        if (event.type === "avatar-state") return { ...current, avatarLoading: event.running };
+        if (event.type === "avatar") {
+          return {
+            ...current,
+            people: current.people.map((person) =>
+              person.id === event.entityId ? { ...person, avatarUrl: event.avatarUrl } : person,
+            ),
+            scan: current.scan
+              ? {
+                  ...current.scan,
+                  people: current.scan.people.map((person) => ({
+                    ...person,
+                    groups: person.groups.map((group) =>
+                      group.id === event.entityId
+                        ? { ...group, avatarUrl: event.avatarUrl }
+                        : group,
+                    ),
+                  })),
+                }
+              : null,
+            avatarLoading: current.avatarLoading,
+          };
+        }
+        if (event.type === "scan-state") {
+          if (!current.scan || current.scan.id !== event.scanId) {
+            return {
+              ...current,
+              scan: {
+                id: event.scanId,
+                createdAt: event.createdAt,
+                running: event.running,
+                people: [],
+              },
+            };
+          }
+          return { ...current, scan: { ...current.scan, running: event.running } };
+        }
+        const existing = current.scan?.id === event.scanId ? current.scan.people : [];
+        const people = existing.some((person) => person.personId === event.person.personId)
+          ? existing.map((person) =>
+              person.personId === event.person.personId ? event.person : person,
+            )
+          : [...existing, event.person];
+        return {
+          ...current,
+          scan: {
+            id: event.scanId,
+            createdAt: event.createdAt,
+            running: true,
+            people,
+          },
+        };
+      });
+    }
+    source.addEventListener("message", applyWorkspaceEvent);
+    return () => source.close();
+  }, [authenticated, demo, refreshWorkspace]);
+
+  useEffect(() => {
+    if (demo || !authenticated || telegram.stage !== "authorized" || catalogCountsRequested.current)
+      return;
+    catalogCountsRequested.current = true;
+    /** Restarts missing catalog-wide counts once after opening an authorized workspace. */
+    async function queueCatalogCounts(): Promise<void> {
+      try {
+        await api("scans/catalog", "POST");
+        await refreshWorkspace();
+      } catch (failure) {
+        catalogCountsRequested.current = false;
+        if (failure instanceof ApiError && failure.status === 401) clearWorkspace();
+        setError(failure instanceof Error ? failure.message : "Catalog scan could not be queued.");
+      }
+    }
+    void queueCatalogCounts();
+  }, [authenticated, clearWorkspace, demo, refreshWorkspace, telegram.stage]);
 
   useEffect(() => {
     if (demo) return;

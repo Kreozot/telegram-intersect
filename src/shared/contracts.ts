@@ -34,6 +34,12 @@ export interface Snapshot {
   scan: Scan | null;
   avatarLoading: boolean;
 }
+export type WorkspaceEvent =
+  | { type: "resync" }
+  | { type: "scan-person"; scanId: string; createdAt: string; person: PersonScan }
+  | { type: "scan-state"; scanId: string; createdAt: string; running: boolean }
+  | { type: "avatar"; entityId: string; avatarUrl: string }
+  | { type: "avatar-state"; running: boolean };
 export type LoginStage =
   | "idle"
   | "connecting"

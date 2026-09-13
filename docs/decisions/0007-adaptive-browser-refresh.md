@@ -1,6 +1,6 @@
 # Decision 0007: Adaptive browser refresh
 
-Date: 2026-09-11. Status: ACCEPTED — requested by the owner.
+Date: 2026-09-11. Status: SUPERSEDED by Decision 0014.
 
 ## Decision
 

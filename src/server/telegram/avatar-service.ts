@@ -1,5 +1,6 @@
 import { Api } from "teleproto";
 import type { CachedAvatar, Repository, StoredPerson } from "../storage/repository.js";
+import type { WorkspaceEvents } from "../workspace-events.js";
 import type { PrivacyClient } from "./privacy-client.js";
 
 const MAX_AVATAR_BYTES = 512 * 1024;
@@ -24,6 +25,7 @@ export class AvatarService {
   constructor(
     private readonly repo: Repository,
     private readonly requireClient: () => PrivacyClient,
+    private readonly events?: WorkspaceEvents,
   ) {}
 
   /** Reports whether background avatar work can still change a browser snapshot. */
@@ -60,6 +62,7 @@ export class AvatarService {
   /** Processes one thumbnail at a time so avatar traffic does not compete aggressively with scans. */
   private async drain(): Promise<void> {
     this.running = true;
+    this.events?.publish({ type: "avatar-state", running: true });
     try {
       while (!this.closed) {
         const next = this.pending.entries().next().value as [string, PendingAvatar] | undefined;
@@ -69,10 +72,15 @@ export class AvatarService {
         try {
           const avatar = await this.download(pending);
           if (avatar && !this.closed) {
-            if (pending.kind === "group") this.repo.saveAvatar(avatar);
-            else {
+            if (pending.kind === "group") {
+              this.repo.saveAvatar(avatar);
+              this.publishAvatar(avatar);
+            } else {
               const current = this.repo.storedPeople().find((entry) => entry.id === entityId);
-              if (current?.photo?.id === avatar.photoId) this.repo.saveAvatar(avatar);
+              if (current?.photo?.id === avatar.photoId) {
+                this.repo.saveAvatar(avatar);
+                this.publishAvatar(avatar);
+              }
             }
           }
         } catch {
@@ -81,7 +89,17 @@ export class AvatarService {
       }
     } finally {
       this.running = false;
+      this.events?.publish({ type: "avatar-state", running: false });
     }
+  }
+
+  /** Notifies browsers of one cache revision without retransmitting the catalog or scan. */
+  private publishAvatar(avatar: CachedAvatar): void {
+    this.events?.publish({
+      type: "avatar",
+      entityId: avatar.entityId,
+      avatarUrl: `/api/avatars/${encodeURIComponent(avatar.entityId)}?v=${encodeURIComponent(avatar.photoId)}`,
+    });
   }
 
   /** Fetches the small profile-photo rendition and accepts only bounded static bitmap formats. */

@@ -7,6 +7,7 @@ import type { Repository } from "../storage/repository.js";
 import type { AvatarService } from "../telegram/avatar-service.js";
 import type { MetadataService } from "../telegram/metadata-service.js";
 import type { TelegramService } from "../telegram/telegram-service.js";
+import type { WorkspaceEvents } from "../workspace-events.js";
 import { registerRoutes } from "./routes.js";
 
 /** Composes the HTTP boundary without opening sockets, allowing isolated authorization tests. */
@@ -17,6 +18,7 @@ export function createApp(
   scans: ScanService,
   metadata: MetadataService,
   avatars?: AvatarService,
+  events?: WorkspaceEvents,
 ) {
   const app = Fastify({
     logger: false,
@@ -24,7 +26,7 @@ export function createApp(
     requestTimeout: 120_000,
   });
   registerAccess(app, config);
-  registerRoutes(app, repo, telegram, scans, metadata, config, avatars);
+  registerRoutes(app, repo, telegram, scans, metadata, config, avatars, events);
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof RequestError) return reply.code(409).send({ error: error.message });
     if (error instanceof Error && "validation" in error)

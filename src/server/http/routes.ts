@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { PersonSource } from "../../shared/contracts.js";
+import { queueCatalogCounts, refreshCatalogAndQueueCounts } from "../catalog-refresh.js";
 import type { Config } from "../config.js";
 import { RequestError } from "../request-error.js";
 import type { ScanService } from "../scans/scan-service.js";
@@ -7,6 +8,7 @@ import type { Repository } from "../storage/repository.js";
 import type { AvatarService } from "../telegram/avatar-service.js";
 import type { MetadataService } from "../telegram/metadata-service.js";
 import type { TelegramService } from "../telegram/telegram-service.js";
+import type { WorkspaceEvents } from "../workspace-events.js";
 
 /** Registers protected metadata routes with strict JSON schemas and no raw provider serialization. */
 export function registerRoutes(
@@ -17,6 +19,7 @@ export function registerRoutes(
   metadata: MetadataService,
   config: Config,
   avatars?: AvatarService,
+  events?: WorkspaceEvents,
 ): void {
   app.get("/api/telegram", async () => telegram.state());
   app.post<{ Body: { mode: "phone" | "qr" } }>(
@@ -76,6 +79,27 @@ export function registerRoutes(
     scan: repo.completedScan(),
     avatarLoading: avatars?.isRunning() ?? false,
   }));
+  app.get("/api/events", async (request, reply) => {
+    if (!events) return reply.code(503).send({ error: "Workspace events are unavailable." });
+    reply.hijack();
+    reply.raw.writeHead(200, {
+      "Cache-Control": "no-cache, no-store",
+      Connection: "keep-alive",
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "X-Accel-Buffering": "no",
+    });
+    reply.raw.write("retry: 2000\n\n");
+    const header = request.headers["last-event-id"];
+    const afterId = typeof header === "string" ? Number.parseInt(header, 10) || 0 : 0;
+    const unsubscribe = events.subscribe(afterId, ({ id, event }) => {
+      reply.raw.write(`id: ${id}\ndata: ${JSON.stringify(event)}\n\n`);
+    });
+    const heartbeat = setInterval(() => reply.raw.write(": keepalive\n\n"), 20_000);
+    reply.raw.on("close", () => {
+      clearInterval(heartbeat);
+      unsubscribe();
+    });
+  });
   app.get<{ Params: { personId: string } }>(
     "/api/avatars/:personId",
     {
@@ -112,10 +136,8 @@ export function registerRoutes(
       },
     },
     async (request) => {
-      if (repo.scan()?.running)
-        throw new RequestError("Wait for the current scan before refreshing people.");
-      await metadata.loadPeople(request.body.source);
-      return { people: repo.people() };
+      await refreshCatalogAndQueueCounts(request.body.source, repo, metadata, scans);
+      return { ok: true };
     },
   );
   app.post<{ Body: { ids: string[] } }>(
@@ -148,6 +170,12 @@ export function registerRoutes(
       return scans.enqueue(request.body.ids);
     },
   );
+  app.post("/api/scans/catalog", async () => {
+    if (telegram.state().stage !== "authorized")
+      throw new RequestError("Sign in to Telegram first.");
+    metadata.assertIdle();
+    return { queued: queueCatalogCounts(repo, scans) !== null };
+  });
   app.post("/api/scans/cancel", async () => {
     await scans.cancel();
     return { scan: repo.scan() };

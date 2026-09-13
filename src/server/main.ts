@@ -7,16 +7,18 @@ import { Repository } from "./storage/repository.js";
 import { AvatarService } from "./telegram/avatar-service.js";
 import { MetadataService } from "./telegram/metadata-service.js";
 import { TelegramService } from "./telegram/telegram-service.js";
+import { WorkspaceEvents } from "./workspace-events.js";
 
 /** Boots a single-port server with Vite middleware in development and static assets in production. */
 async function main(): Promise<void> {
   const config = loadConfig();
   const repo = new Repository(resolve(config.dataDir, "intersect.sqlite"), config.encryptionKey);
+  const events = new WorkspaceEvents();
   const telegram = new TelegramService(config, repo);
-  const avatars = new AvatarService(repo, () => telegram.requireClient());
+  const avatars = new AvatarService(repo, () => telegram.requireClient(), events);
   const metadata = new MetadataService(repo, () => telegram.requireClient(), avatars);
-  const scans = new ScanService(repo, metadata);
-  const app = createApp(config, repo, telegram, scans, metadata, avatars);
+  const scans = new ScanService(repo, metadata, 200, events);
+  const app = createApp(config, repo, telegram, scans, metadata, avatars, events);
   if (process.argv.includes("--dev")) {
     const { createServer } = await import("vite");
     const { default: middie } = await import("@fastify/middie");
