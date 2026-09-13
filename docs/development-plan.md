@@ -25,6 +25,7 @@ Updated: 2026-09-13. Checkboxes describe verified outcomes, not merely intended 
 - [x] Replace recurring full-snapshot scan/avatar polling with incremental SSE updates.
 - [x] Enforce a configurable simultaneous people-selection limit, defaulting to 50.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
+- [x] Add an animated, keyboard-accessible full-screen graph view with reversible slot positioning.
 - [x] Add recent-activity/discovery, A–Z, and descending observed-connection sorting in both map
   modes, with an independent selected-first option.
 - [x] Limit browser polling to active login and scan work, with command and tab-return refreshes.

@@ -1,9 +1,12 @@
 import { Button, Progress } from "@mantine/core";
+import { useRef } from "react";
 import type { GraphData, MapMode, Scan } from "../../../shared/contracts.js";
 import { LogoMark } from "../LogoMark/LogoMark.js";
 import styles from "./Explorer.module.css";
+import { FullscreenControl } from "./FullscreenControl/FullscreenControl.js";
 import { GraphCanvas } from "./GraphCanvas/GraphCanvas.js";
 import { GraphFilter } from "./GraphFilter/GraphFilter.js";
+import { useFullscreenCanvas } from "./use-fullscreen-canvas.js";
 
 interface Props {
   graph: GraphData;
@@ -28,6 +31,8 @@ export function Explorer({
   scan,
   mode,
 }: Props) {
+  const canvasSlot = useRef<HTMLDivElement>(null);
+  const fullscreen = useFullscreenCanvas(canvasSlot, styles);
   const people = graph.nodes.filter((node) => node.kind === "person").length;
   const groups = graph.nodes.length - people;
   const selectedResults = graph.nodes
@@ -122,27 +127,35 @@ export function Explorer({
             : "No observed people connect two selected communities. Turn off Only intersections to see all people."}
         </p>
       )}
-      <div className={styles.canvas}>
-        <GraphCanvas graph={visibleGraph} focus={focus} onFocus={onFocus} />
-        <div className={styles.legend}>
-          <span className={styles.personDot} />
-          People
-          <span className={styles.temperatureScale} />
-          Communities · cool = fewer, warm = more · number = selected people
-        </div>
-        {!(mode === "people" ? people : groups) && (
-          <div className={styles.empty}>
-            <LogoMark className={styles.emptyIcon} />
-            <h2 className={styles.emptyTitle}>Every connection has a context.</h2>
-            <p className={styles.emptyText}>
-              {mode === "people"
-                ? "Select people to discover shared groups in the background."
-                : "Select observed communities to compare their people."}
-              <br />
-              Your map will grow here, one connection at a time.
-            </p>
+      <div className={styles.canvasSlot} ref={canvasSlot}>
+        <div className={fullscreen.className} ref={fullscreen.canvasRef}>
+          <GraphCanvas
+            graph={visibleGraph}
+            focus={focus}
+            onFocus={onFocus}
+            viewportRevision={fullscreen.viewportRevision}
+          />
+          <FullscreenControl expanded={fullscreen.expanded} onToggle={fullscreen.toggle} />
+          <div className={styles.legend}>
+            <span className={styles.personDot} />
+            People
+            <span className={styles.temperatureScale} />
+            Communities · cool = fewer, warm = more · number = selected people
           </div>
-        )}
+          {!(mode === "people" ? people : groups) && (
+            <div className={styles.empty}>
+              <LogoMark className={styles.emptyIcon} />
+              <h2 className={styles.emptyTitle}>Every connection has a context.</h2>
+              <p className={styles.emptyText}>
+                {mode === "people"
+                  ? "Select people to discover shared groups in the background."
+                  : "Select observed communities to compare their people."}
+                <br />
+                Your map will grow here, one connection at a time.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
       <div className={styles.caption}>
         <span>Hover for names · Select for connections · Scroll to zoom</span>

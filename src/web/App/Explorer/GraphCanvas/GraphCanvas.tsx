@@ -11,9 +11,10 @@ interface Props {
   graph: GraphData;
   focus: string | null;
   onFocus: (id: string | null) => void;
+  viewportRevision?: number;
 }
 /** Owns the Cytoscape lifecycle, resize handling, and focus bridge; data derivation remains pure and separate. */
-export function GraphCanvas({ graph, focus, onFocus }: Props) {
+export function GraphCanvas({ graph, focus, onFocus, viewportRevision = 0 }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const instance = useRef<Core | null>(null);
   const { colorScheme } = useMantineColorScheme();
@@ -78,6 +79,13 @@ export function GraphCanvas({ graph, focus, onFocus }: Props) {
       cy.getElementById(focus).addClass("focused");
     }
   }, [focus, serialized]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: The revision explicitly signals a completed container transition.
+  useEffect(() => {
+    const cy = instance.current;
+    if (!cy) return;
+    cy.resize();
+    cy.fit(undefined, 60);
+  }, [viewportRevision]);
   /** Fits the current network within the viewport after user pan or zoom. */
   function fit(): void {
     instance.current?.fit(undefined, 60);
