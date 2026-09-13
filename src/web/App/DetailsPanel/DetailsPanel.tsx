@@ -1,6 +1,5 @@
 import type { GraphData, Scan } from "../../../shared/contracts.js";
 import { CommunityOverview } from "./CommunityOverview/CommunityOverview.js";
-import { DetailsInsight } from "./DetailsInsight/DetailsInsight.js";
 import styles from "./DetailsPanel.module.css";
 import { FocusedNodeDetails } from "./FocusedNodeDetails/FocusedNodeDetails.js";
 
@@ -49,7 +48,6 @@ export function DetailsPanel({ className, graph, focus, onFocus, scan }: Props) 
       ) : (
         <CommunityOverview groups={groups} onFocus={onFocus} />
       )}
-      <DetailsInsight />
     </aside>
   );
 }
