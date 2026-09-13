@@ -21,11 +21,11 @@ clearly distinguished from confirmed results.
 Explore the synthetic demo without connecting a Telegram account. Switch between selecting people
 and communities, inspect their overlaps, and focus any node to reveal its observed connections.
 
-![Dark demo overview showing selected contacts and their shared-community graph](screenshots/demo-overview.png)
+![Dark demo overview showing selected people and their shared-community graph](screenshots/demo-overview.png)
 
 Select a community to focus its graph connections and see every selected person observed in it.
 
-![Light demo view focused on the Design collective community](screenshots/community-detail.png)
+![Dark demo view focused on the Balkan Product Circle community](screenshots/community-detail.png)
 
 ## Features
 
