@@ -13,7 +13,8 @@ Updated: 2026-09-13. Checkboxes describe verified outcomes, not merely intended 
 - [x] Scaffold strict TypeScript, npm lockfile, Biome, Vite, Fastify, and SQLite.
 - [x] Implement owner access, same-origin API protection, encrypted session persistence, login challenges, and deletion paths.
 - [x] Authorize loopback-only owner access automatically while retaining access-key sessions for hosted mode.
-- [x] Implement normalized people discovery, independent source merging, filters, search, and selection.
+- [x] Implement normalized people discovery, independent source merging, filters,
+  Russian transliteration-aware search, and selection.
 - [x] Add non-blocking static profile-avatar loading with authenticated local caching.
 - [x] Extend the avatar cache to observed communities and show photos in the community lens and graph.
 - [x] Implement durable common-group scans, pagination, flood waits, checkpoint persistence,

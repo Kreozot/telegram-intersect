@@ -43,7 +43,11 @@ existing file and unrelated settings, masks the API hash prompt, and never print
    same-origin SSE connection. Only the short-lived login flow retains a small status poll. User
    commands and tab visibility restoration trigger one full refresh. The browser derives
    selected-person counts and graph edges locally.
-6. Browser-local source preferences filter the identity catalog. The graph adapter can project the
+6. Browser-local source preferences filter the identity catalog. People and community search compares
+   normalized source text through per-letter English-style, passport-style, and j-based Russian
+   transliteration alternatives in both Cyrillic-to-Latin and Latin-to-Cyrillic lookup directions.
+   Alternatives may be mixed within one query without generating every complete spelling. The
+   graph adapter can project the
    same observed bipartite edges from selected people to communities or from selected communities to
    people; no participant-list request is introduced by the inverted projection.
 

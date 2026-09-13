@@ -18,7 +18,8 @@
 ## Approved first-release scope
 
 - One owner and one connected Telegram account per deployment. Hosted access still requires an application authentication boundary. Multi-user hosting requires a separate approved design.
-- Source selection, search, deduplication, catalog- and selection-triggered background scans, scan
+- Source selection, bidirectional Russian transliteration-aware search, deduplication,
+  catalog- and selection-triggered background scans, scan
   progress, cancellation, partial-result recovery, and refresh.
 - A configurable simultaneous people-selection limit, defaulting to 50.
 - Static profile avatars loaded in the background with local cache-first display and initials fallback.

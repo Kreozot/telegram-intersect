@@ -1,6 +1,7 @@
 import { Checkbox, SegmentedControl, TextInput } from "@mantine/core";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { Group, MapMode, Person, PersonSource, Scan } from "../../../shared/contracts.js";
+import { matchesSearchQuery } from "../../../shared/search.js";
 import { limitSelection, toggleSelection } from "../../../shared/selection.js";
 import { CommunityRow } from "./CommunityRow/CommunityRow.js";
 import styles from "./PeoplePanel.module.css";
@@ -73,7 +74,7 @@ export function PeoplePanel({
     people.filter(
       (person) =>
         person.sources.some((source) => enabledSources.has(source)) &&
-        `${person.name} ${person.username ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+        matchesSearchQuery(`${person.name} ${person.username ?? ""}`, query),
     ),
     sort,
     selectedFirst,
@@ -84,7 +85,7 @@ export function PeoplePanel({
   const allSelected =
     selectablePeople.length > 0 && selectablePeople.every((person) => selected.has(person.id));
   const filteredCommunities = sortCommunities(
-    communities.filter((community) => community.title.toLowerCase().includes(query.toLowerCase())),
+    communities.filter((community) => matchesSearchQuery(community.title, query)),
     sort,
     selectedFirst,
     selectedCommunities,
