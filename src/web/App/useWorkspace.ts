@@ -1,3 +1,4 @@
+import { notifications } from "@mantine/notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   AppStatus,
@@ -10,6 +11,36 @@ import { limitSelection, toggleSelection } from "../../shared/selection.js";
 import { ApiError, api } from "../api/client.js";
 import { demoSnapshot } from "../demo.js";
 import { shouldPollWorkspace } from "./workspace-refresh.js";
+
+/** Presents recoverable workspace failures without permanently changing the page layout. */
+function showErrorNotification(failure: unknown, fallback: string): void {
+  notifications.show({
+    id: "workspace-error",
+    color: "red",
+    title: "Something needs attention",
+    message: failure instanceof Error ? failure.message : fallback,
+    autoClose: 8000,
+    withCloseButton: true,
+  });
+}
+
+/** Describes successful user commands that benefit from explicit completion feedback. */
+function commandSuccessMessage(path: string, body: unknown, method: string): string | null {
+  if (path === "people" && typeof body === "object" && body !== null && "source" in body) {
+    return `${body.source === "contacts" ? "Contacts" : "Dialogs"} loaded successfully.`;
+  }
+  if (path === "scans/resume") return "Background scan resumed.";
+  if (path === "scans/cancel") return "Background scan cancelled.";
+  if (path === "analysis" && method === "DELETE") return "Local analysis data cleared.";
+  if (path === "telegram" && method === "DELETE") return "Telegram disconnected.";
+  if (path === "access" && method === "POST") return "Workspace unlocked.";
+  return null;
+}
+
+/** Shows short-lived confirmation after a user-visible load or update completes. */
+function showSuccessNotification(message: string): void {
+  notifications.show({ color: "teal", title: "Done", message });
+}
 
 /** Coordinates server-backed workspace state and the interactive or build-time demo modes. */
 export function useWorkspace() {
@@ -48,7 +79,6 @@ export function useWorkspace() {
       return new Set();
     }
   });
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const catalogCountsRequested = useRef(false);
   const pollingRequired = shouldPollWorkspace(authenticated, telegram.stage);
@@ -95,7 +125,7 @@ export function useWorkspace() {
       try {
         await initializeWorkspace();
       } catch (failure) {
-        setError(failure instanceof Error ? failure.message : "Connection failed.");
+        showErrorNotification(failure, "Connection failed.");
       }
     }
     void initialize();
@@ -110,7 +140,7 @@ export function useWorkspace() {
       try {
         setTelegram(await api<TelegramStatus>("telegram"));
       } catch (failure) {
-        if (!disposed) setError(failure instanceof Error ? failure.message : "Connection failed.");
+        if (!disposed) showErrorNotification(failure, "Connection failed.");
       }
       if (!disposed) timer = setTimeout(poll, 1800);
     }
@@ -202,7 +232,7 @@ export function useWorkspace() {
       } catch (failure) {
         catalogCountsRequested.current = false;
         if (failure instanceof ApiError && failure.status === 401) clearWorkspace();
-        setError(failure instanceof Error ? failure.message : "Catalog scan could not be queued.");
+        showErrorNotification(failure, "Catalog scan could not be queued.");
       }
     }
     void queueCatalogCounts();
@@ -215,14 +245,15 @@ export function useWorkspace() {
       if (document.visibilityState !== "visible") return;
       const refresh = authenticated ? refreshWorkspace : initializeWorkspace;
       void refresh().catch((failure: unknown) => {
-        setError(failure instanceof Error ? failure.message : "Connection failed.");
+        showErrorNotification(failure, "Connection failed.");
       });
     }
     document.addEventListener("visibilitychange", refreshWhenVisible);
     return () => document.removeEventListener("visibilitychange", refreshWhenVisible);
   }, [authenticated, demo, initializeWorkspace, refreshWorkspace]);
   useEffect(() => {
-    if (demo || !authenticated || telegram.stage !== "authorized" || selected.size === 0) return;
+    if (demo || busy || !authenticated || telegram.stage !== "authorized" || selected.size === 0)
+      return;
     const ids = [...selected];
     const timer = setTimeout(() => {
       /** Enqueues the settled selection without blocking further catalog interaction. */
@@ -232,17 +263,16 @@ export function useWorkspace() {
           await refreshWorkspace();
         } catch (failure) {
           if (failure instanceof ApiError && failure.status === 401) clearWorkspace();
-          setError(failure instanceof Error ? failure.message : "Scan could not be queued.");
+          showErrorNotification(failure, "Scan could not be queued.");
         }
       }
       void enqueueSelection();
     }, 250);
     return () => clearTimeout(timer);
-  }, [authenticated, clearWorkspace, demo, refreshWorkspace, selected, telegram.stage]);
+  }, [authenticated, busy, clearWorkspace, demo, refreshWorkspace, selected, telegram.stage]);
   /** Executes a user command and refreshes its outcome while presenting recoverable failures. */
   async function command(path: string, body?: unknown, method = "POST"): Promise<void> {
     setBusy(true);
-    setError(null);
     try {
       const result = await api<unknown>(path, method, body);
       if (path === "access") {
@@ -255,9 +285,11 @@ export function useWorkspace() {
       } else {
         await refreshWorkspace();
       }
+      const successMessage = commandSuccessMessage(path, body, method);
+      if (successMessage) showSuccessNotification(successMessage);
     } catch (failure) {
       if (failure instanceof ApiError && failure.status === 401) clearWorkspace();
-      setError(failure instanceof Error ? failure.message : "Request failed.");
+      showErrorNotification(failure, "Request failed.");
     } finally {
       setBusy(false);
     }
@@ -273,7 +305,6 @@ export function useWorkspace() {
         maxSelectedPeople,
       ),
     );
-    setError(null);
   }
   /** Leaves synthetic data and reloads the owner's actual workspace. */
   function leaveDemo(): void {
@@ -318,7 +349,6 @@ export function useWorkspace() {
     setSourceEnabled,
     select,
     maxSelectedPeople,
-    error,
     busy,
     command,
     showDemo,

@@ -11,10 +11,6 @@
   min-height: 720px;
 }
 
-.alert {
-  margin: 12px 20px 0;
-}
-
 .footer {
   display: flex;
   align-items: center;

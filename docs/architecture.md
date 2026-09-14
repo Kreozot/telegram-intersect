@@ -41,8 +41,9 @@ existing file and unrelated settings, masks the API hash prompt, and never print
    source pauses and resumes unfinished scan work so catalog and common-group requests do not overlap.
 5. The browser loads one normalized snapshot, then receives person-scan and avatar deltas over a
    same-origin SSE connection. Only the short-lived login flow retains a small status poll. User
-   commands and tab visibility restoration trigger one full refresh. The browser derives
-   selected-person counts and graph edges locally.
+   commands and tab visibility restoration trigger one full refresh. Global command feedback uses
+   transient bottom-right Mantine notifications; selection-triggered scan requests wait for active
+   commands to settle. The browser derives selected-person counts and graph edges locally.
 6. Browser-local source preferences filter the identity catalog. People and community search compares
    normalized source text through per-letter English-style, passport-style, and j-based Russian
    transliteration alternatives in both Cyrillic-to-Latin and Latin-to-Cyrillic lookup directions.

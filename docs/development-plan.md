@@ -24,6 +24,7 @@ Updated: 2026-09-13. Checkboxes describe verified outcomes, not merely intended 
 - [x] Resume missing catalog-wide counts when an authorized workspace is opened.
 - [x] Replace fixed sequential scan pacing with adaptive concurrency and global flood-wait backoff.
 - [x] Replace recurring full-snapshot scan/avatar polling with incremental SSE updates.
+- [x] Move global errors and successful command feedback to transient bottom-right notifications.
 - [x] Enforce a configurable simultaneous people-selection limit, defaulting to 50.
 - [x] Implement person–group graph, community counts, details, focus, themes, and synthetic demo.
 - [x] Add an animated, keyboard-accessible full-screen graph view with reversible slot positioning.

@@ -1,4 +1,3 @@
-import { Alert } from "@mantine/core";
 import { useState } from "react";
 import type { MapMode } from "../../shared/contracts.js";
 import { buildGraph, filterPeopleBySources } from "../../shared/graph.js";
@@ -49,16 +48,6 @@ export function App() {
         authenticated={workspace.authenticated}
         accessMode={workspace.accessMode}
       />
-      {workspace.error && (
-        <Alert
-          color="red"
-          title="Something needs attention"
-          withCloseButton
-          className={styles.alert}
-        >
-          {workspace.error}
-        </Alert>
-      )}
       {confirm && (
         <ConfirmationAlert
           kind={confirm}
