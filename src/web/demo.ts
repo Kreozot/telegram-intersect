@@ -103,6 +103,29 @@ const memberships = [
   [0, 3, 8, 10, 12],
 ] as const;
 
+const dialogOrders = [
+  8,
+  1,
+  null,
+  6,
+  null,
+  3,
+  null,
+  9,
+  null,
+  0,
+  null,
+  5,
+  null,
+  7,
+  null,
+  2,
+  null,
+  4,
+  null,
+  10,
+] as const;
+
 /** Provides an explicitly labeled synthetic graph so visitors can inspect the UI without Telegram access. */
 export function demoSnapshot(): Snapshot {
   const names = [
@@ -132,18 +155,22 @@ export function demoSnapshot(): Snapshot {
     title,
     avatarUrl: groupAvatar(index),
   }));
-  const people = names.map((name, index) => ({
-    id: `user:${index + 1}`,
-    name,
-    username: index % 4 === 0 ? `demo_${index + 1}` : null,
-    avatarUrl: personAvatar(name, index),
-    sources:
-      index % 4 === 0
-        ? (["contacts", "dialogs"] as const)
-        : index % 4 === 1
-          ? (["dialogs"] as const)
-          : (["contacts"] as const),
-  }));
+  const people = names.map((name, index) => {
+    const dialogOrder = dialogOrders[index];
+    return {
+      id: `user:${index + 1}`,
+      name,
+      username: index % 4 === 0 ? `demo_${index + 1}` : null,
+      avatarUrl: personAvatar(name, index),
+      ...(dialogOrder === null || dialogOrder === undefined ? {} : { dialogOrder }),
+      sources:
+        index % 4 === 0
+          ? (["contacts", "dialogs"] as const)
+          : index % 4 === 1
+            ? (["dialogs"] as const)
+            : (["contacts"] as const),
+    };
+  });
   return {
     people: people.map((person) => ({ ...person, sources: [...person.sources] })),
     avatarLoading: false,

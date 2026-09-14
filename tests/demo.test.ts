@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { sortPeople } from "../src/web/App/PeoplePanel/sort-people.js";
 import { demoSnapshot } from "../src/web/demo.js";
 
 test("demo data represents varied identities, interests, and self-contained avatars", () => {
@@ -26,4 +27,18 @@ test("demo data represents varied identities, interests, and self-contained avat
   assert.ok([...groupCounts.values()].some((count) => count <= 2));
   assert.equal(groupCounts.get("group:1"), 14);
   assert.equal(groupCounts.get("group:6"), 10);
+});
+
+test("demo recent people order is visibly different from alphabetical order", () => {
+  const people = demoSnapshot().people;
+  const recentIds = sortPeople(people, "recent", false, new Set(), new Map()).map(
+    (person) => person.id,
+  );
+  const alphabeticalIds = sortPeople(people, "alphabetical", false, new Set(), new Map()).map(
+    (person) => person.id,
+  );
+
+  assert.notDeepEqual(recentIds, alphabeticalIds);
+  assert.equal(recentIds[0], "user:10");
+  assert.equal(recentIds[1], "user:2");
 });
