@@ -74,7 +74,6 @@ export function App() {
             setMode(nextMode);
             setFocus(null);
           }}
-          onConfirm={setConfirm}
         />
         <Explorer
           graph={graph}
@@ -99,10 +98,30 @@ export function App() {
         />
       </main>
       <footer className={styles.footer}>
-        <span className={styles.dot} />
-        {workspace.demo
-          ? "Synthetic demo · no Telegram requests"
-          : "Private workspace · no message history requested or stored"}
+        <div className={styles.footerStatus}>
+          <span className={styles.dot} />
+          {workspace.demo
+            ? "Synthetic demo · no Telegram requests"
+            : "Private workspace · no message history requested or stored"}
+        </div>
+        {workspace.authenticated && connected && !workspace.demo && (
+          <div className={styles.accountActions}>
+            <button
+              className={styles.accountButton}
+              type="button"
+              onClick={() => setConfirm("data")}
+            >
+              Clear local data
+            </button>
+            <button
+              className={styles.accountButton}
+              type="button"
+              onClick={() => setConfirm("logout")}
+            >
+              Disconnect Telegram
+            </button>
+          </div>
+        )}
         <span className={styles.footerTagline}>Shared context, made visible.</span>
       </footer>
     </div>

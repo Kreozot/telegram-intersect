@@ -11,11 +11,10 @@ interface Props {
   connected: boolean;
   mode: MapMode;
   onModeChange: (mode: MapMode) => void;
-  onConfirm: (kind: "logout" | "data") => void;
 }
 
 /** Selects the sidebar block for the current access, Telegram, or catalog workflow state. */
-export function WorkspaceSidebar({ workspace, connected, mode, onModeChange, onConfirm }: Props) {
+export function WorkspaceSidebar({ workspace, connected, mode, onModeChange }: Props) {
   let content: React.ReactNode;
   if (!workspace.authenticated && !workspace.demo) {
     content = (
@@ -60,24 +59,5 @@ export function WorkspaceSidebar({ workspace, connected, mode, onModeChange, onC
       />
     );
   }
-  const showAccountActions = workspace.authenticated && connected && !workspace.demo;
-  return (
-    <aside className={styles.sidebar}>
-      {content}
-      {showAccountActions && (
-        <div className={styles.accountActions}>
-          <button className={styles.accountButton} type="button" onClick={() => onConfirm("data")}>
-            Clear local data
-          </button>
-          <button
-            className={styles.accountButton}
-            type="button"
-            onClick={() => onConfirm("logout")}
-          >
-            Disconnect Telegram
-          </button>
-        </div>
-      )}
-    </aside>
-  );
+  return <aside className={styles.sidebar}>{content}</aside>;
 }

@@ -14,11 +14,35 @@
 .footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   padding: 13px 24px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 11px;
+}
+
+.footerStatus,
+.accountActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accountActions {
+  gap: 12px;
+}
+
+.accountButton {
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.accountButton:hover {
+  color: var(--text);
 }
 
 .footerTagline {
@@ -51,5 +75,10 @@
 
   .footerTagline {
     display: none;
+  }
+
+  .footer {
+    flex-wrap: wrap;
+    gap: 8px 16px;
   }
 }
