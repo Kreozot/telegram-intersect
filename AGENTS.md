@@ -13,6 +13,8 @@ Read README.md, docs/requirements.md, docs/development-plan.md, docs/architectur
 
 ## Implementation rules
 
+- Use npm exclusively for dependency installation and package scripts. Never invoke pnpm in this
+  repository, including bundled or fallback pnpm executables.
 - Write application code in strict TypeScript with detailed domain and boundary types.
 - Apply the single responsibility principle to functions, modules, hooks, services, and components.
 - Document all application logic with English JSDoc explaining purpose, usage context, and relevant behavior. Document components and hooks as well.
