@@ -111,6 +111,9 @@ Telegram session strings are encrypted with AES-256-GCM. The key is provided by 
 - Email/CAPTCHA/account registration auth flows are unsupported.
 - Catalog import is not a durable resumable job; retry preserves the prior catalog.
 - Graph layout uses Cytoscape CoSE followed by a bounded body-collision separation pass. People use circular cached avatars with naturally sized name labels below and a colored-circle fallback; groups use compact avatar markers with count labels and names on hover/selection. Group borders run from cool blue to warm red according to the observed selected-person count, using the number of selected people as the scale ceiling, and markers enlarge slightly on hover or selection. For multi-person selections, an explicit default intersection filter retains groups observed for at least two selected people. The canvas and details list use the same filtered graph; top-level metrics retain full scan counts. Single-person selections show all their groups. Filtering and renderer-only color derivation never change stored data. Large maps still need broader performance limits.
+- Selection controls update immediately while graph derivation follows a deferred selection snapshot.
+  The canvas retains one Cytoscape instance, reconciles elements in place, and schedules its unchanged
+  CoSE and collision passes for the next animation frame while cancelling superseded queued layouts.
 - The graph canvas can transition from its layout slot to a fixed viewport layer and back. The slot
   preserves page geometry, the browser locks document scrolling while expanded, and Cytoscape is
   resized and fitted after each transition. Escape and the corner control both restore the inline

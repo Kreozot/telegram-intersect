@@ -1,5 +1,5 @@
 import { Button, useMantineColorScheme } from "@mantine/core";
-import cytoscape, { type Core } from "cytoscape";
+import cytoscape, { type Core, type Layouts } from "cytoscape";
 import { useEffect, useRef } from "react";
 import type { GraphData } from "../../../../shared/contracts.js";
 import styles from "./GraphCanvas.module.css";
@@ -17,36 +17,20 @@ interface Props {
 export function GraphCanvas({ graph, focus, onFocus, viewportRevision = 0 }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const instance = useRef<Core | null>(null);
+  const layout = useRef<Layouts | null>(null);
+  const layoutFrame = useRef<number | null>(null);
   const { colorScheme } = useMantineColorScheme();
-  const serialized = JSON.stringify(graph);
   useEffect(() => {
     const element = container.current;
     if (!element) return;
-    const data = JSON.parse(serialized) as GraphData;
     const cy = cytoscape({
       container: element,
-      elements: [
-        ...addGroupTemperatureColors(data.nodes).map((node) => ({ data: node })),
-        ...data.edges.map((edge) => ({ data: edge })),
-      ],
+      elements: [],
       style: graphStyles(element),
-      layout: {
-        name: "cose",
-        animate: false,
-        randomize: false,
-        padding: 45,
-        nodeDimensionsIncludeLabels: true,
-        nodeRepulsion: (node) => (node.data("kind") === "person" ? 1200000 : 18000),
-        nodeOverlap: 40,
-        idealEdgeLength: () => 100,
-        gravity: 0.8,
-        numIter: 1500,
-      },
+      layout: { name: "preset" },
       minZoom: 0.03,
       maxZoom: 3,
     });
-    separateNodes(cy);
-    cy.fit(undefined, 45);
     instance.current = cy;
     cy.on("tap", "node", (event) => onFocus(String(event.target.id())));
     cy.on("mouseover", "node", (event) => event.target.addClass("hovered"));
@@ -58,10 +42,68 @@ export function GraphCanvas({ graph, focus, onFocus, viewportRevision = 0 }: Pro
     observer.observe(element);
     return () => {
       observer.disconnect();
+      if (layoutFrame.current !== null) cancelAnimationFrame(layoutFrame.current);
+      layout.current?.stop();
       cy.destroy();
       instance.current = null;
     };
-  }, [serialized, onFocus]);
+  }, [onFocus]);
+  useEffect(() => {
+    const cy = instance.current;
+    if (!cy) return;
+    if (layoutFrame.current !== null) cancelAnimationFrame(layoutFrame.current);
+    layout.current?.stop();
+    const coloredNodes = addGroupTemperatureColors(graph.nodes);
+    const nextIds = new Set([
+      ...coloredNodes.map((node) => node.id),
+      ...graph.edges.map((edge) => edge.id),
+    ]);
+    cy.batch(() => {
+      cy.elements()
+        .filter((element) => !nextIds.has(element.id()))
+        .remove();
+      for (const node of coloredNodes) {
+        const existing = cy.getElementById(node.id);
+        if (existing.length) existing.data(node);
+        else cy.add({ group: "nodes", data: node });
+      }
+      for (const edge of graph.edges) {
+        const existing = cy.getElementById(edge.id);
+        if (existing.length) existing.data(edge);
+        else cy.add({ group: "edges", data: edge });
+      }
+    });
+    layoutFrame.current = requestAnimationFrame(() => {
+      layoutFrame.current = null;
+      if (cy.destroyed()) return;
+      const nextLayout = cy.layout({
+        name: "cose",
+        animate: false,
+        randomize: false,
+        padding: 45,
+        nodeDimensionsIncludeLabels: true,
+        nodeRepulsion: (node) => (node.data("kind") === "person" ? 1200000 : 18000),
+        nodeOverlap: 40,
+        idealEdgeLength: () => 100,
+        gravity: 0.8,
+        numIter: 1500,
+      });
+      layout.current = nextLayout;
+      nextLayout.run();
+      if (layout.current !== nextLayout || cy.destroyed()) return;
+      separateNodes(cy);
+      cy.fit(undefined, 45);
+      layout.current = null;
+    });
+    return () => {
+      if (layoutFrame.current !== null) {
+        cancelAnimationFrame(layoutFrame.current);
+        layoutFrame.current = null;
+      }
+      layout.current?.stop();
+      layout.current = null;
+    };
+  }, [graph]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: Theme changes update CSS tokens consumed imperatively by Cytoscape.
   useEffect(() => {
     const element = container.current;
@@ -78,7 +120,7 @@ export function GraphCanvas({ graph, focus, onFocus, viewportRevision = 0 }: Pro
       active.addClass("highlighted");
       cy.getElementById(focus).addClass("focused");
     }
-  }, [focus, serialized]);
+  }, [focus, graph]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: The revision explicitly signals a completed container transition.
   useEffect(() => {
     const cy = instance.current;

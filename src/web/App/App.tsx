@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import type { MapMode } from "../../shared/contracts.js";
 import { buildGraph, filterPeopleBySources } from "../../shared/graph.js";
 import { filterIntersections } from "../../shared/graph-filter.js";
@@ -17,17 +17,24 @@ export function App() {
   const [intersectionsOnly, setIntersectionsOnly] = useState(true);
   const [mode, setMode] = useState<MapMode>("people");
   const [confirm, setConfirm] = useState<ConfirmationKind | null>(null);
-  const eligiblePeople = filterPeopleBySources(
-    workspace.snapshot.people,
-    workspace.demo ? new Set(["contacts", "dialogs"]) : workspace.enabledSources,
+  const selection = mode === "people" ? workspace.selected : workspace.selectedCommunities;
+  const deferredSelection = useDeferredValue(selection);
+  const eligiblePeople = useMemo(
+    () =>
+      filterPeopleBySources(
+        workspace.snapshot.people,
+        workspace.demo ? new Set(["contacts", "dialogs"]) : workspace.enabledSources,
+      ),
+    [workspace.demo, workspace.enabledSources, workspace.snapshot.people],
   );
-  const graph = buildGraph(
-    eligiblePeople,
-    workspace.snapshot.scan,
-    mode === "people" ? workspace.selected : workspace.selectedCommunities,
-    mode,
+  const graph = useMemo(
+    () => buildGraph(eligiblePeople, workspace.snapshot.scan, deferredSelection, mode),
+    [deferredSelection, eligiblePeople, mode, workspace.snapshot.scan],
   );
-  const visibleGraph = filterIntersections(graph, intersectionsOnly, mode);
+  const visibleGraph = useMemo(
+    () => filterIntersections(graph, intersectionsOnly, mode),
+    [graph, intersectionsOnly, mode],
+  );
   const connected = workspace.telegram.stage === "authorized";
   /** Performs the selected destructive user action after an explicit in-app confirmation. */
   async function confirmAction(): Promise<void> {

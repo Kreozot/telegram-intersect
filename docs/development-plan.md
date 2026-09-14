@@ -57,6 +57,10 @@ Initial synthetic tests cover privacy normalization, method blocking, encryption
 
 ## Known scope and limitations
 
+Selection-driven map updates now keep list controls on the urgent React path, defer graph derivation,
+reuse the Cytoscape renderer, and cancel superseded layouts queued for a later animation frame. CoSE
+and collision separation remain main-thread work and retain their existing iteration algorithms.
+
 Dense-map readability: replaced always-visible community titles with compact avatar/count markers and hover/selection names, emphasized people, added a cool-to-warm group-border scale for observed selected-person counts, added a default optional intersection filter, and separated residual node collisions after CoSE. Browser verification uses a synthetic 3-person, 135-community, 187-edge fixture in both filtered and complete views. Automated tests cover filter integrity, temperature-scale derivation, and collision separation; arbitrary large datasets remain unbenchmarked.
 
 An owner-reported zero-community result was traced to an imported catalog with no scan record.
