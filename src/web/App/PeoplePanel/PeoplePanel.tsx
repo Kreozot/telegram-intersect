@@ -309,11 +309,6 @@ export function PeoplePanel({
           / {maxSelectedPeople} {mode === "people" ? "people" : "communities"} selected
         </div>
         <ScanActions scan={scan} demo={demo} onCancel={onCancel} onResume={onResume} />
-        <p className={styles.bottomNote}>
-          {mode === "people"
-            ? "Loading a source checks shared-group counts in the background; selections are prioritized by visibility only."
-            : "Selected communities are compared through already observed people from enabled sources."}
-        </p>
       </div>
     </section>
   );

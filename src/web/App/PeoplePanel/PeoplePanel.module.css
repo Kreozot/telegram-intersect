@@ -101,9 +101,3 @@
 .selectionCount {
   color: var(--text);
 }
-
-.bottomNote {
-  font-size: 10px;
-  text-align: center;
-  margin: 12px 0;
-}
