@@ -190,3 +190,6 @@ export function demoSnapshot(): Snapshot {
     },
   };
 }
+
+/** Reuses immutable synthetic demo data so unrelated React renders do not retrigger graph layout. */
+export const DEMO_SNAPSHOT = demoSnapshot();

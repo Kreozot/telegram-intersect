@@ -9,7 +9,7 @@ import type {
 } from "../../shared/contracts.js";
 import { limitSelection, toggleSelection } from "../../shared/selection.js";
 import { ApiError, api } from "../api/client.js";
-import { demoSnapshot } from "../demo.js";
+import { DEMO_SNAPSHOT } from "../demo.js";
 import { shouldPollWorkspace } from "./workspace-refresh.js";
 
 /** Presents recoverable workspace failures without permanently changing the page layout. */
@@ -62,7 +62,7 @@ export function useWorkspace() {
   });
   const [selected, setSelected] = useState<Set<string>>(() => {
     if (!demoOnly) return new Set();
-    return new Set(demoSnapshot().people.map((person) => person.id));
+    return new Set(DEMO_SNAPSHOT.people.map((person) => person.id));
   });
   const [selectedCommunities, setSelectedCommunities] = useState<Set<string>>(new Set());
   const [enabledSources, setEnabledSources] = useState<Set<PersonSource>>(() => {
@@ -296,12 +296,11 @@ export function useWorkspace() {
   }
   /** Switches to isolated synthetic data without writing it to server storage. */
   function showDemo(): void {
-    const data = demoSnapshot();
     setDemo(true);
     setSelected(
       limitSelection(
         new Set(),
-        data.people.map((person) => person.id),
+        DEMO_SNAPSHOT.people.map((person) => person.id),
         maxSelectedPeople,
       ),
     );
@@ -340,7 +339,7 @@ export function useWorkspace() {
     accessMode,
     demo,
     demoOnly,
-    snapshot: demo ? demoSnapshot() : snapshot,
+    snapshot: demo ? DEMO_SNAPSHOT : snapshot,
     telegram,
     selected,
     selectedCommunities,
